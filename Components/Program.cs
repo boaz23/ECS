@@ -12,7 +12,11 @@ namespace Components
             //This is an example of a testing code that you should run for all the gates that you create
 
             //Create a gate
-            TestGate(new MultiBitOrGate(4));
+            TestGate<AndGate>();
+            TestGate<OrGate>();
+            TestGate<XorGate>();
+            TestGate(new MultiBitAndGate(5));
+            TestGate(new MultiBitOrGate(5));
         }
 
         private static void TestGate<T>() where T : Gate, new()
@@ -30,7 +34,7 @@ namespace Components
             NAndGate.Corrupt = true;
             if (gate.TestGate())
                 Console.WriteLine("bugbug");
-
+            NAndGate.Corrupt = false;
 
             Console.WriteLine("done");
             Console.ReadLine();
