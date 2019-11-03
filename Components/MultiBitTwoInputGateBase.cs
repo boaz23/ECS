@@ -94,7 +94,7 @@ namespace Components
 
         private static void ResetWire(int[] inputs, int wireIndex)
         {
-            inputs[wireIndex] = default;
+            inputs[wireIndex] = default(int);
         }
 
         private bool TestOutput(int[] inputs)
