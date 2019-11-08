@@ -46,6 +46,7 @@
     <Compile Include="ALU.cs" />
     <Compile Include="AndGate.cs" />
     <Compile Include="BitwiseAndGate.cs" />
+    <Compile Include="BitwiseDominantTwoInputGateBase.cs" />
     <Compile Include="BitwiseTwoInputGate.cs" />
     <Compile Include="BitwiseDemux.cs" />
     <Compile Include="BitwiseMultiwayDemux.cs" />

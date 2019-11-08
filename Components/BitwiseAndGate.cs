@@ -6,12 +6,12 @@ using System.Text;
 namespace Components
 {
     //A two input bitwise gate takes as input two WireSets containing n wires, and computes a bitwise function - z_i=f(x_i,y_i)
-    class BitwiseAndGate : BitwiseTwoInputGate
+    class BitwiseAndGate : BitwiseDominantTwoInputGateBase
     {
         //your code here
 
         public BitwiseAndGate(int iSize)
-            : base(iSize)
+            : base(iSize, 0)
         {
             //your code here
         }
@@ -23,9 +23,9 @@ namespace Components
             return "And " + Input1 + ", " + Input2 + " -> " + Output;
         }
 
-        public override bool TestGate()
+        protected override TwoInputGate CreateGate()
         {
-            throw new NotImplementedException();
+            return new AndGate();
         }
     }
 }

@@ -20,6 +20,8 @@ namespace Components
 
             TestGate<MuxGate>();
             TestGate<Demux>();
+            TestGate(new BitwiseAndGate(5));
+            TestGate(new BitwiseOrGate(5));
 
             Console.WriteLine("done");
         }
@@ -41,6 +43,11 @@ namespace Components
                 Console.WriteLine("bugbug");
 
             NAndGate.Corrupt = false;
+        }
+
+        internal static string ArrayToString<T>(T[] arr)
+        {
+            return $"{{{string.Join(", ", arr)}}}";
         }
     }
 }
