@@ -17,7 +17,9 @@ namespace Components
             TestGate<XorGate>();
             TestGate(new MultiBitAndGate(5));
             TestGate(new MultiBitOrGate(5));
+
             TestGate<MuxGate>();
+            TestGate<Demux>();
 
             Console.WriteLine("done");
         }
