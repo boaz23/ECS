@@ -23,6 +23,7 @@ namespace Components
             TestGate(new BitwiseAndGate(5));
             TestGate(new BitwiseOrGate(5));
             TestGate(new BitwiseNotGate(5), false);
+            TestGate(new BitwiseMux(5));
 
             Console.WriteLine("done");
         }

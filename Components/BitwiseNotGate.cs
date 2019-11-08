@@ -110,7 +110,7 @@ namespace Components
             return result;
         }
 
-        private int Not(int x)
+        private static int Not(int x)
         {
             return x == 0 ? 1 : 0;
         }
