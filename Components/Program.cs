@@ -24,6 +24,7 @@ namespace Components
             TestGate(new BitwiseOrGate(5));
             TestGate(new BitwiseNotGate(5), false);
             TestGate(new BitwiseMux(5));
+            TestGate(new BitwiseDemux(5));
 
             Console.WriteLine("done");
         }
