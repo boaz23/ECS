@@ -22,6 +22,7 @@ namespace Components
             TestGate<Demux>();
             TestGate(new BitwiseAndGate(5));
             TestGate(new BitwiseOrGate(5));
+            TestGate(new BitwiseNotGate(5), false);
 
             Console.WriteLine("done");
         }
@@ -31,23 +32,31 @@ namespace Components
             TestGate(new T());
         }
 
-        private static void TestGate(Gate gate)
+        private static void TestGate(Gate gate, bool testCorruptedNand = true)
         {
             //Test that the unit testing works properly
             if (!gate.TestGate())
                 Console.WriteLine("bugbug");
 
-            //Now we ruin the nand gates that are used in all other gates. The gate should not work properly after this.
-            NAndGate.Corrupt = true;
-            if (gate.TestGate())
-                Console.WriteLine("bugbug");
+            if (testCorruptedNand)
+            {
+                //Now we ruin the nand gates that are used in all other gates. The gate should not work properly after this.
+                NAndGate.Corrupt = true;
+                if (gate.TestGate())
+                    Console.WriteLine("bugbug");
 
-            NAndGate.Corrupt = false;
+                NAndGate.Corrupt = false;
+            }
         }
 
         internal static string ArrayToString<T>(T[] arr)
         {
             return $"{{{string.Join(", ", arr)}}}";
+        }
+
+        internal static void PrintArray<T>(T[] arr)
+        {
+            Console.WriteLine(ArrayToString(arr));
         }
     }
 }

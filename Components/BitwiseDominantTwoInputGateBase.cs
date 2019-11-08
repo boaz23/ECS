@@ -40,8 +40,8 @@ namespace Components
             if (iWire1 == Size && iWire2 == Size)
             {
                 SetWireValues(input1, input2);
-                int[] expected = BitwiseAnd(input1, input2);
-                return TestOutput(input1, input2, expected);
+                int[] expected = BitwiseOp(input1, input2);
+                return TestOutput(expected);
             }
             else if (iWire1 < Size)
             {
@@ -93,7 +93,7 @@ namespace Components
             }
         }
 
-        private int[] BitwiseAnd(int[] input1, int[] input2)
+        private int[] BitwiseOp(int[] input1, int[] input2)
         {
             int[] result = new int[Size];
             for (int i = 0; i < Size; i++)
@@ -109,7 +109,7 @@ namespace Components
             return x == DominantValue || y == DominantValue ? DominantValue : (1 - DominantValue);
         }
 
-        private bool TestOutput(int[] input1, int[] input2, int[] expected)
+        private bool TestOutput(int[] expected)
         {
             for (int i = 0; i < Size; i++)
             {
