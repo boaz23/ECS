@@ -54,7 +54,7 @@
     <Compile Include="BitwiseNotGate.cs" />
     <Compile Include="BitwiseOrGate.cs" />
     <Compile Include="MultiBitOrGate.cs" />
-    <Compile Include="MultiBitTwoInputGateBase.cs" />
+    <Compile Include="MultiBitDominantTwoInputGateBase.cs" />
     <Compile Include="TwoInputGate.cs" />
     <Compile Include="Clock.cs" />
     <Compile Include="Component.cs" />

@@ -5,13 +5,13 @@ using System.Text;
 
 namespace Components
 {
-    abstract class MultiBitTwoInputGateBase : MultiBitGate
+    abstract class MultiBitDominantTwoInputGateBase : MultiBitGate
     {
         private TwoInputGate[] m_gates;
 
         protected readonly int dominantValue;
 
-        public MultiBitTwoInputGateBase(int iInputCount, int dominantValue)
+        public MultiBitDominantTwoInputGateBase(int iInputCount, int dominantValue)
             : base(iInputCount)
         {
             //your code here

@@ -39,6 +39,7 @@ namespace Components
             NAndGate.Corrupt = true;
             if (gate.TestGate())
                 Console.WriteLine("bugbug");
+
             NAndGate.Corrupt = false;
         }
     }
