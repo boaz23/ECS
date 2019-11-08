@@ -17,6 +17,9 @@ namespace Components
             TestGate<XorGate>();
             TestGate(new MultiBitAndGate(5));
             TestGate(new MultiBitOrGate(5));
+            TestGate<MuxGate>();
+
+            Console.WriteLine("done");
         }
 
         private static void TestGate<T>() where T : Gate, new()
@@ -35,9 +38,6 @@ namespace Components
             if (gate.TestGate())
                 Console.WriteLine("bugbug");
             NAndGate.Corrupt = false;
-
-            Console.WriteLine("done");
-            Console.ReadLine();
         }
     }
 }
