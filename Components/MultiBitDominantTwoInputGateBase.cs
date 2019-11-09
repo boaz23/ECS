@@ -9,14 +9,16 @@ namespace Components
     {
         private TwoInputGate[] m_gates;
 
-        protected readonly int dominantValue;
+        protected int DominantValue { get; }
 
         public MultiBitDominantTwoInputGateBase(int iInputCount, int dominantValue)
             : base(iInputCount)
         {
             //your code here
             int n = iInputCount;
+            DominantValue = dominantValue;
             m_gates = new TwoInputGate[n - 1];
+
             TwoInputGate gate = CreateGate();
             TwoInputGate prevGate = gate;
 
@@ -35,7 +37,6 @@ namespace Components
             }
 
             Output = prevGate.Output;
-            this.dominantValue = dominantValue;
         }
 
         public override bool TestGate()
@@ -106,13 +107,13 @@ namespace Components
         {
             for (int i = 0; i < inputs.Length; i++)
             {
-                if (inputs[i] == dominantValue)
+                if (inputs[i] == DominantValue)
                 {
-                    return dominantValue;
+                    return DominantValue;
                 }
             }
 
-            return 1 - dominantValue;
+            return 1 - DominantValue;
         }
     }
 }
