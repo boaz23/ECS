@@ -25,6 +25,8 @@ namespace Components
             TestGate(new BitwiseNotGate(5), false);
             TestGate(new BitwiseMux(5));
             TestGate(new BitwiseDemux(5));
+            TestGate(new MultiwayMuxGate(3));
+            TestGate(new BitwiseMultiwayMux(2, 3));
 
             Console.WriteLine("done");
         }

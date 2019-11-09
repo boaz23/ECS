@@ -36,6 +36,7 @@ namespace Components
             }
 
             //your code here
+            ControlBits = cControlBits;
             m_multiwayMuxGates = new MultiwayMuxGate[Size];
             for (int i = 0; i < Size; i++)
             {
