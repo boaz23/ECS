@@ -20,6 +20,7 @@ namespace Components
         public WireSet[] Inputs { get; private set; }
 
         //your code here
+        private readonly MultiwayMuxGate[] m_multiwayMuxGates;
 
         public BitwiseMultiwayMux(int iSize, int cControlBits)
         {
@@ -33,9 +34,21 @@ namespace Components
                 Inputs[i] = new WireSet(Size);
                 
             }
-            
-            //your code here
 
+            //your code here
+            m_multiwayMuxGates = new MultiwayMuxGate[Size];
+            for (int i = 0; i < Size; i++)
+            {
+                var multiwayMuxGate = new MultiwayMuxGate(ControlBits);
+                m_multiwayMuxGates[i] = multiwayMuxGate;
+
+                multiwayMuxGate.ConnectControl(Control);
+                for (int j = 0; j < Inputs.Length; j++)
+                {
+                    multiwayMuxGate.ConnectInput(j, Inputs[j][i]);
+                }
+                Output[i].ConnectInput(multiwayMuxGate.Output);
+            }
         }
 
 
