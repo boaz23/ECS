@@ -26,6 +26,8 @@ namespace Components
             TestGate(new BitwiseMux(5));
             TestGate(new BitwiseDemux(5));
 
+            TestWireSet();
+
             Console.WriteLine("done");
         }
 
@@ -48,6 +50,36 @@ namespace Components
                     Console.WriteLine("bugbug");
 
                 NAndGate.Corrupt = false;
+            }
+        }
+
+        private static void TestWireSet()
+        {
+            var wireSet = new WireSet(4);
+
+            TestWireSet_Value(wireSet, 11);
+            TestWireSet_Value(wireSet, 0);
+            TestWireSet_2sComplement(wireSet, -5);
+            TestWireSet_2sComplement(wireSet, 5);
+            TestWireSet_2sComplement(wireSet, -7);
+            TestWireSet_2sComplement(wireSet, 6);
+        }
+
+        private static void TestWireSet_Value(WireSet wireSet, int value)
+        {
+            wireSet.SetValue(value);
+            if (value != wireSet.GetValue())
+            {
+                Console.WriteLine("bugbug wireset");
+            }
+        }
+
+        private static void TestWireSet_2sComplement(WireSet wireSet, int value)
+        {
+            wireSet.Set2sComplement(value);
+            if (value != wireSet.Get2sComplement())
+            {
+                Console.WriteLine("bugbug wireset");
             }
         }
 

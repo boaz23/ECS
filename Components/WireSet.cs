@@ -43,25 +43,59 @@ namespace Components
         //Transform a positive integer value into binary and set the wires accordingly, with 0 being the LSB
         public void SetValue(int iValue)
         {
-            throw new NotImplementedException();
+            if (iValue < 0)
+            {
+                throw new ArgumentException("value must be a non-negative integer.", nameof(iValue));
+            }
+
+            int[] bits = GetBits(iValue);
+            SetValue(bits);
         }
 
         //Transform the binary code into a positive integer
         public int GetValue()
         {
-            throw new NotImplementedException();
+            int exponent = 1;
+            int value = 0;
+            for (int i = 0; i < Size; i++)
+            {
+                value += exponent * m_aWires[i].Value;
+                exponent *= 2;
+            }
+
+            return value;
         }
 
         //Transform an integer value into binary using 2`s complement and set the wires accordingly, with 0 being the LSB
         public void Set2sComplement(int iValue)
         {
-            throw new NotImplementedException();
+            int[] bits = GetBits(iValue);
+            if (iValue < 0)
+            {
+                BitwiseNot(bits);
+                Increment(bits);
+            }
+            SetValue(bits);
         }
 
         //Transform the binary code in 2`s complement into an integer
         public int Get2sComplement()
         {
-            throw new NotImplementedException();
+            int exponent = 1;
+            int value = 0;
+            for (int i = 0; i < Size; i++)
+            {
+                value += exponent * m_aWires[i].Value;
+                exponent *= 2;
+            }
+
+            // if is negative
+            if (m_aWires[Size - 1].Value == 1)
+            {
+                value = -(exponent - value);
+            }
+
+            return value;
         }
 
         public void ConnectInput(WireSet wIn)
@@ -77,5 +111,46 @@ namespace Components
             
         }
 
+        private void SetValue(int[] bits)
+        {
+            for (int i = 0; i < Size && i < bits.Length; i++)
+            {
+                m_aWires[i].Value = bits[i];
+            }
+        }
+
+        private int[] GetBits(int iValue)
+        {
+            int[] bits = new int[Size];
+            for (int i = 0; i < Size && iValue != 0; i++)
+            {
+                bits[i] = Math.Abs(iValue % 2);
+                iValue /= 2;
+            }
+
+            return bits;
+        }
+
+        private static void BitwiseNot(int[] bits)
+        {
+            for (int i = 0; i < bits.Length; i++)
+            {
+                bits[i] = 1 - bits[i];
+            }
+        }
+
+        private static void Increment(int[] bits)
+        {
+            int i;
+            for (i = 0; i < bits.Length && bits[i] != 0; i++)
+            {
+                bits[i] = 0;
+            }
+
+            if (i < bits.Length)
+            {
+                bits[i] = 1;
+            }
+        }
     }
 }
