@@ -20,15 +20,47 @@ namespace Components
             Control = new WireSet(ControlBits);
             Inputs = new Wire[(int)Math.Pow(2, ControlBits)];
 
-            m_muxGates = new MuxGate[Inputs.Length - 1];
-            int muxGatesAtDepth = Inputs.Length / 2;
-            for (int i = 0; i < m_muxGates.Length; i++)
-            {
-                m_muxGates[i] = new MuxGate();
-            }
+            var muxGates = new MuxGate[Inputs.Length - 1];
+            InitializeMuxGates(muxGates);
+            ConnectInputs(muxGates);
+            BuildMuxGatesTree(muxGates);
+            //for (int i = 0, exponent = 1; i < muxGates.Length; exponent *= 2, i += exponent)
+            //{
+            //    for (int j = 0; j < exponent; j++)
+            //    {
 
-            //Output = 
+            //    }
+            //}
+
+            Output = muxGates[0].Output;
+
+            m_muxGates = muxGates;
         }
+
+        private void BuildMuxGatesTree(MuxGate[] muxGates)
+        {
+            int depthGatesCount = Inputs.Length / 4;
+            int iGate = depthGatesCount - 1;
+            int iControl = 1;
+            while (iGate >= 0)
+            {
+                for (int i = 0; i < depthGatesCount; i++)
+                {
+                    MuxGate gate = muxGates[iGate];
+                    gate.ConnectInput1(muxGates[2 * iGate].Output);
+                    gate.ConnectInput2(muxGates[(2 * iGate) + 1].Output);
+                    gate.ConnectControl(Control[iControl]);
+
+                    iGate++;
+                }
+
+                iGate -= depthGatesCount;
+                depthGatesCount /= 2;
+                iGate -= depthGatesCount;
+                iControl++;
+            }
+        }
+
         public void ConnectInput(int i, Wire wInput)
         {
             Inputs[i].ConnectInput(wInput);
@@ -41,6 +73,30 @@ namespace Components
         public override bool TestGate()
         {
             throw new NotImplementedException();
+        }
+
+        private static void InitializeMuxGates(MuxGate[] muxGates)
+        {
+            for (int i = 0; i < muxGates.Length; i++)
+            {
+                muxGates[i] = new MuxGate();
+            }
+        }
+
+        private void ConnectInputs(MuxGate[] muxGates)
+        {
+            int iGate = (Inputs.Length / 2) - 1;
+            int iInput = 0;
+            while (iInput < Inputs.Length)
+            {
+                MuxGate muxGate = muxGates[iGate];
+                muxGate.ConnectInput1(Inputs[iInput]);
+                muxGate.ConnectInput2(Inputs[iInput + 1]);
+                muxGate.ConnectControl(Control[0]);
+
+                iGate++;
+                iInput += 2;
+            }
         }
     }
 }
