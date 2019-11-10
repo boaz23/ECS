@@ -54,6 +54,7 @@
     <Compile Include="BitwiseMux.cs" />
     <Compile Include="BitwiseNotGate.cs" />
     <Compile Include="BitwiseOrGate.cs" />
+    <Compile Include="CompleteBinaryTree.cs" />
     <Compile Include="MultiBitOrGate.cs" />
     <Compile Include="MultiBitDominantTwoInputGateBase.cs" />
     <Compile Include="MultiwayMuxGate.cs" />

@@ -12,7 +12,7 @@ namespace Components
         public WireSet Control { get; }
         public Wire[] Inputs { get; }
 
-        private readonly MuxGate[] m_muxGates;
+        private readonly CompleteBinaryTree<MuxGate> m_muxGates;
 
         public MultiwayMuxGate(int cControlBits)
         {
@@ -21,7 +21,7 @@ namespace Components
             Inputs = new Wire[(int)Math.Pow(2, ControlBits)];
             InitializeInputs();
 
-            var muxGates = new MuxGate[Inputs.Length - 1];
+            var muxGates = new CompleteBinaryTree<MuxGate>(ControlBits - 1);
             InitializeMuxGates(muxGates);
             ConnectInputs(muxGates);
             BuildMuxGatesTree(muxGates);
@@ -38,26 +38,20 @@ namespace Components
             m_muxGates = muxGates;
         }
 
-        private void BuildMuxGatesTree(MuxGate[] muxGates)
+        private void BuildMuxGatesTree(CompleteBinaryTree<MuxGate> muxGates)
         {
-            int depthGatesCount = Inputs.Length / 4;
-            int iGate = depthGatesCount - 1;
             int iControl = 1;
-            while (depthGatesCount > 0)
+            for (int depth = muxGates.Height - 1; depth >= 0; depth--)
             {
-                for (int i = 0; i < depthGatesCount; i++)
+                foreach (var itemIndexPair in muxGates.GetDepthEnumerator(depth))
                 {
-                    MuxGate gate = muxGates[iGate];
-                    gate.ConnectInput1(muxGates[(2 * iGate) + 1].Output);
-                    gate.ConnectInput2(muxGates[(2 * iGate) + 2].Output);
+                    int index = itemIndexPair.Index;
+                    MuxGate gate = itemIndexPair.Item;
+                    gate.ConnectInput1(muxGates.LeftChild(index).Output);
+                    gate.ConnectInput2(muxGates.RightChild(index).Output);
                     gate.ConnectControl(Control[iControl]);
-
-                    iGate++;
                 }
 
-                iGate -= depthGatesCount;
-                depthGatesCount /= 2;
-                iGate -= depthGatesCount;
                 iControl++;
             }
         }
@@ -84,26 +78,24 @@ namespace Components
             }
         }
 
-        private static void InitializeMuxGates(MuxGate[] muxGates)
+        private static void InitializeMuxGates(CompleteBinaryTree<MuxGate> muxGates)
         {
-            for (int i = 0; i < muxGates.Length; i++)
+            for (int i = 0; i < muxGates.ItemsCount; i++)
             {
                 muxGates[i] = new MuxGate();
             }
         }
 
-        private void ConnectInputs(MuxGate[] muxGates)
+        private void ConnectInputs(CompleteBinaryTree<MuxGate> muxGates)
         {
-            int iGate = (Inputs.Length / 2) - 1;
             int iInput = 0;
-            while (iInput < Inputs.Length)
+            foreach (var itemIndexPair in muxGates.GetDepthEnumerator(muxGates.Height))
             {
-                MuxGate muxGate = muxGates[iGate];
+                MuxGate muxGate = itemIndexPair.Item;
                 muxGate.ConnectInput1(Inputs[iInput]);
                 muxGate.ConnectInput2(Inputs[iInput + 1]);
                 muxGate.ConnectControl(Control[0]);
 
-                iGate++;
                 iInput += 2;
             }
         }
