@@ -133,7 +133,7 @@ namespace Components
                 ResetWire(control, iControlWire);
                 return true;
             }
-            else // iWire2 < Size
+            else // iInputWire < Inputs.Length
             {
                 input[iInputWire] = 0;
                 if (!DoPermutations(control, iControlWire, input, iInputWire + 1))
