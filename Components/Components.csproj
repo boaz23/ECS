@@ -57,7 +57,9 @@
     <Compile Include="CompleteBinaryTree.cs" />
     <Compile Include="MultiBitOrGate.cs" />
     <Compile Include="MultiBitDominantTwoInputGateBase.cs" />
+    <Compile Include="MultiwayDemuxGate.cs" />
     <Compile Include="MultiwayMuxGate.cs" />
+    <Compile Include="Range.cs" />
     <Compile Include="TwoInputGate.cs" />
     <Compile Include="Clock.cs" />
     <Compile Include="Component.cs" />

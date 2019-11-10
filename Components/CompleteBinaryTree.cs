@@ -8,6 +8,8 @@ namespace Components
 {
     class CompleteBinaryTree<T> : IEnumerable<T>
     {
+        public const int ROOT_INDEX = 0;
+
         public CompleteBinaryTree(int height)
         {
             Height = height;
@@ -29,6 +31,8 @@ namespace Components
         public int Height { get; }
         public T[] Items { get; }
         public int ItemsCount => Items.Length;
+
+        public T Root => Items[ROOT_INDEX];
 
         public T Parent(int index)
         {
@@ -61,12 +65,18 @@ namespace Components
         {
             return ((IList<T>)Items).GetEnumerator();
         }
-        public IEnumerable<ItemIndexPair> GetDepthEnumerator(int depth)
+
+        public Range GetDepthIndexRange(int depth)
         {
             int count = (int)Math.Pow(2, depth);
             int start = count - 1;
             int end = start + count;
-            for (int i = start; i < end; i++)
+            return new Range(start, end, count);
+        }
+        public IEnumerable<ItemIndexPair> GetDepthEnumerator(int depth)
+        {
+            Range range = GetDepthIndexRange(depth);
+            for (int i = range.Start; i < range.End; i++)
             {
                 yield return new ItemIndexPair(i, Items[i]);
             }

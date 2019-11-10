@@ -17,23 +17,16 @@ namespace Components
         public MultiwayMuxGate(int cControlBits)
         {
             ControlBits = cControlBits;
+            var muxGates = new CompleteBinaryTree<MuxGate>(ControlBits - 1);
             Control = new WireSet(ControlBits);
-            Inputs = new Wire[(int)Math.Pow(2, ControlBits)];
+            Inputs = new Wire[muxGates.ItemsCount + 1];
             InitializeInputs();
 
-            var muxGates = new CompleteBinaryTree<MuxGate>(ControlBits - 1);
             InitializeMuxGates(muxGates);
             ConnectInputs(muxGates);
             BuildMuxGatesTree(muxGates);
-            //for (int i = 0, exponent = 1; i < muxGates.Length; exponent *= 2, i += exponent)
-            //{
-            //    for (int j = 0; j < exponent; j++)
-            //    {
 
-            //    }
-            //}
-
-            Output = muxGates[0].Output;
+            Output = muxGates.Root.Output;
 
             m_muxGates = muxGates;
         }
