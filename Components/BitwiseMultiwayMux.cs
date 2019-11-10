@@ -21,7 +21,6 @@ namespace Components
 
         //your code here
         private readonly MultiwayMuxGate[] m_multiwayMuxGates;
-        private readonly int inputPermutationsCount;
 
         public BitwiseMultiwayMux(int iSize, int cControlBits)
         {
@@ -39,7 +38,6 @@ namespace Components
             //your code here
             ControlBits = cControlBits;
             m_multiwayMuxGates = new MultiwayMuxGate[Size];
-            inputPermutationsCount = (int)Math.Pow(2, Size);
             for (int i = 0; i < Size; i++)
             {
                 var multiwayMuxGate = new MultiwayMuxGate(ControlBits);
@@ -100,6 +98,7 @@ namespace Components
 
         private bool DoInputPermutations(int iInput)
         {
+            int inputPermutationsCount = (int)Math.Pow(2, Size);
             for (int i = 0; i < inputPermutationsCount; i++)
             {
                 Inputs[iInput].SetValue(i);

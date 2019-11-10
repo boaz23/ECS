@@ -28,6 +28,7 @@ namespace Components
             TestGate(new MultiwayMuxGate(3));
             TestGate(new BitwiseMultiwayMux(2, 2));
             TestGate(new MultiwayDemuxGate(3));
+            TestGate(new BitwiseMultiwayDemux(2, 3));
 
             TestWireSet();
 

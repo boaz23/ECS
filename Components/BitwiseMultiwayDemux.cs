@@ -20,6 +20,7 @@ namespace Components
         public WireSet[] Outputs { get; private set; }
 
         //your code here
+        private readonly MultiwayDemuxGate[] m_multiwayDemuxGates;
 
         public BitwiseMultiwayDemux(int iSize, int cControlBits)
         {
@@ -32,7 +33,20 @@ namespace Components
                 Outputs[i] = new WireSet(Size);
             }
             //your code here
+            ControlBits = cControlBits;
+            m_multiwayDemuxGates = new MultiwayDemuxGate[Size];
+            for (int i = 0; i < Size; i++)
+            {
+                var multiwayDemuxGate = new MultiwayDemuxGate(ControlBits);
+                m_multiwayDemuxGates[i] = multiwayDemuxGate;
 
+                multiwayDemuxGate.ConnectInput(Input[i]);
+                multiwayDemuxGate.ConnectControl(Control);
+                for (int j = 0; j < Outputs.Length; j++)
+                {
+                    Outputs[j][i].ConnectInput(multiwayDemuxGate.Outputs[j]);
+                }
+            }
         }
 
 
@@ -48,7 +62,60 @@ namespace Components
 
         public override bool TestGate()
         {
-            throw new NotImplementedException();
+            int inputPermutationsCount = (int)Math.Pow(2, Size);
+            for (int input = 0; input < inputPermutationsCount; input++)
+            {
+                if (!TestGate(input))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool TestGate(int input)
+        {
+            Input.SetValue(input);
+            for (int control = 0; control < Outputs.Length; control++)
+            {
+                Control.SetValue(control);
+                int[,] expected = DoMultiwayDemux();
+                if (!TestOutput(expected))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private int[,] DoMultiwayDemux()
+        {
+            int iOutput = Control.GetValue();
+            int[,] expected = new int[Outputs.Length, Size];
+            for (int i = 0; i < Input.Size; i++)
+            {
+                expected[iOutput, i] = Input[i].Value;
+            }
+
+            return expected;
+        }
+
+        private bool TestOutput(int[,] expected)
+        {
+            for (int i = 0; i < Outputs.Length; i++)
+            {
+                for (int j = 0; j < Size; j++)
+                {
+                    if (Outputs[i][j].Value != expected[i, j])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }
