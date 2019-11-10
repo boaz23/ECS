@@ -21,6 +21,7 @@ namespace Components
 
         //your code here
         private readonly MultiwayMuxGate[] m_multiwayMuxGates;
+        private readonly int inputPermutationsCount;
 
         public BitwiseMultiwayMux(int iSize, int cControlBits)
         {
@@ -38,6 +39,7 @@ namespace Components
             //your code here
             ControlBits = cControlBits;
             m_multiwayMuxGates = new MultiwayMuxGate[Size];
+            inputPermutationsCount = (int)Math.Pow(2, Size);
             for (int i = 0; i < Size; i++)
             {
                 var multiwayMuxGate = new MultiwayMuxGate(ControlBits);
@@ -66,7 +68,61 @@ namespace Components
 
         public override bool TestGate()
         {
-            throw new NotImplementedException();
+            return DoPermutations();
+        }
+
+        private bool DoPermutations()
+        {
+            for (int control = 0; control < Inputs.Length; control++)
+            {
+                Control.SetValue(control);
+                if (!TestGate(0))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool TestGate(int iInput)
+        {
+            if (iInput == Inputs.Length)
+            {
+                int iExpectedInput = Control.GetValue();
+                return TestOutput(iExpectedInput);
+            }
+            else
+            {
+                return DoInputPermutations(iInput);
+            }
+        }
+
+        private bool DoInputPermutations(int iInput)
+        {
+            for (int i = 0; i < inputPermutationsCount; i++)
+            {
+                Inputs[iInput].SetValue(i);
+                if (!TestGate(iInput + 1))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool TestOutput(int iExpectedInput)
+        {
+            for (int i = 0; i < Output.Size; i++)
+            {
+                if (Output[i].Value != Inputs[iExpectedInput][i].Value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }
