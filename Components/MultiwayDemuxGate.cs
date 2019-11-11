@@ -34,16 +34,19 @@ namespace Components
         private void BuildDeuxGatesTree(CompleteBinaryTree<Demux> demuxGates)
         {
             int iControl = 0;
-            for (int depth = demuxGates.Height; depth > 0; depth--)
+            for (int depth = demuxGates.Height - 1; depth >= 0; depth--)
             {
-                Range range = demuxGates.GetDepthIndexRange(depth);
-                for (int i = range.Start; i < range.End; i += 2)
+                foreach (var itemIndexPair in demuxGates.GetDepthEnumerator(depth))
                 {
-                    Demux parent = demuxGates.Parent(i);
-                    demuxGates[i].Input.ConnectInput(parent.Output1);
-                    demuxGates[i].ConnectControl(Control[iControl]);
-                    demuxGates[i + 1].Input.ConnectInput(parent.Output2);
-                    demuxGates[i + 1].ConnectControl(Control[iControl]);
+                    int index = itemIndexPair.Index;
+                    Demux demux = itemIndexPair.Item;
+                    Demux left = demuxGates.LeftChild(index);
+                    Demux right = demuxGates.RightChild(index);
+
+                    left.Input.ConnectInput(demux.Output1);
+                    left.ConnectControl(Control[iControl]);
+                    right.Input.ConnectInput(demux.Output2);
+                    right.ConnectControl(Control[iControl]);
                 }
 
                 iControl++;

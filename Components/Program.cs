@@ -12,6 +12,13 @@ namespace Components
             //This is an example of a testing code that you should run for all the gates that you create
 
             //Create a gate
+            TestGates();
+            TestWireSet();
+            Console.WriteLine("done");
+        }
+
+        private static void TestGates()
+        {
             TestGate<AndGate>();
             TestGate<OrGate>();
             TestGate<XorGate>();
@@ -29,10 +36,6 @@ namespace Components
             TestGate(new BitwiseMultiwayMux(2, 2));
             TestGate(new MultiwayDemuxGate(3));
             TestGate(new BitwiseMultiwayDemux(2, 3));
-
-            TestWireSet();
-
-            Console.WriteLine("done");
         }
 
         private static void TestGate<T>() where T : Gate, new()
