@@ -69,7 +69,7 @@ namespace Components
         //Transform an integer value into binary using 2`s complement and set the wires accordingly, with 0 being the LSB
         public void Set2sComplement(int iValue)
         {
-            int[] bits = GetBits(iValue);
+            int[] bits = GetBits(iValue >= 0 ? iValue : -iValue);
             if (iValue < 0)
             {
                 BitwiseNot(bits);
@@ -124,7 +124,7 @@ namespace Components
             int[] bits = new int[Size];
             for (int i = 0; i < Size && iValue != 0; i++)
             {
-                bits[i] = Math.Abs(iValue % 2);
+                bits[i] = iValue % 2;
                 iValue /= 2;
             }
 

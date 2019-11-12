@@ -70,6 +70,7 @@ namespace Components
             TestWireSet_2sComplement(wireSet, 5);
             TestWireSet_2sComplement(wireSet, -7);
             TestWireSet_2sComplement(wireSet, 6);
+            TestWireSet_2sComplement(wireSet, -8);
         }
 
         private static void TestWireSet_Value(WireSet wireSet, int value)
