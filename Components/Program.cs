@@ -39,6 +39,7 @@ namespace Components
 
             TestGate<HalfAdder>();
             TestGate<FullAdder>();
+            TestGate(new MultiBitAdder(4));
         }
 
         private static void TestGate<T>() where T : Gate, new()
