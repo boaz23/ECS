@@ -31,6 +31,25 @@ namespace Components
 
 
         //your code here
+        private WireSet m_wsZero;
+
+        private BitwiseMultiwayMux m_gZxMux;
+        private BitwiseNotGate m_gNxNot;
+        private BitwiseMultiwayMux m_gNxMux;
+
+        private BitwiseMultiwayMux m_gZyMux;
+        private BitwiseNotGate m_gNyNot;
+        private BitwiseMultiwayMux m_gNyMux;
+
+        private BitwiseMultiwayMux m_gFMux;
+        private MultiBitAdder m_gFAdder;
+        private BitwiseAndGate m_gFAnd;
+
+        private BitwiseMultiwayMux m_gNoMux;
+        private BitwiseNotGate m_gNoNot;
+
+        private MultiBitOrGate m_gZrOr;
+        private NotGate m_gZrNot;
 
         public ALU(int iSize)
         {
@@ -45,10 +64,68 @@ namespace Components
             NotOutput = new Wire();
             Negative = new Wire();            
             Zero = new Wire();
-            
+
 
             //Create and connect all the internal components
+            Output = new WireSet(Size);
 
+            m_wsZero = new WireSet(Size);
+            for (int i = 0; i < Size; i++)
+            {
+                m_wsZero[i].Value = 0;
+            }
+
+            m_gZxMux = new BitwiseMultiwayMux(Size, 1);
+            m_gZxMux.ConnectInput(0, InputX);
+            m_gZxMux.ConnectInput(1, m_wsZero);
+            m_gZxMux.Control[0].ConnectInput(ZeroX);
+
+            m_gNxNot = new BitwiseNotGate(Size);
+            m_gNxNot.ConnectInput(m_gZxMux.Output);
+            m_gNxMux = new BitwiseMultiwayMux(Size, 1);
+            m_gNxMux.ConnectInput(0, m_gZxMux.Output);
+            m_gNxMux.ConnectInput(1, m_gNxNot.Output);
+            m_gNxMux.Control[0].ConnectInput(NotX);
+
+            m_gZyMux = new BitwiseMultiwayMux(Size, 1);
+            m_gZyMux.ConnectInput(0, InputY);
+            m_gZyMux.ConnectInput(1, m_wsZero);
+            m_gZyMux.Control[0].ConnectInput(ZeroY);
+
+            m_gNyNot = new BitwiseNotGate(Size);
+            m_gNyNot.ConnectInput(m_gZyMux.Output);
+            m_gNyMux = new BitwiseMultiwayMux(Size, 1);
+            m_gNyMux.ConnectInput(0, m_gZyMux.Output);
+            m_gNyMux.ConnectInput(1, m_gNyNot.Output);
+            m_gNyMux.Control[0].ConnectInput(NotY);
+
+            m_gFAdder = new MultiBitAdder(Size);
+            m_gFAdder.ConnectInput1(m_gNxMux.Output);
+            m_gFAdder.ConnectInput2(m_gNyMux.Output);
+            m_gFAnd = new BitwiseAndGate(Size);
+            m_gFAnd.ConnectInput1(m_gNxMux.Output);
+            m_gFAnd.ConnectInput2(m_gNyMux.Output);
+            m_gFMux = new BitwiseMultiwayMux(Size, 1);
+            m_gFMux.ConnectInput(0, m_gFAnd.Output);
+            m_gFMux.ConnectInput(1, m_gFAdder.Output);
+            m_gFMux.Control[0].ConnectInput(F);
+
+            m_gNoNot = new BitwiseNotGate(Size);
+            m_gNoNot.ConnectInput(m_gFMux.Output);
+            m_gNoMux = new BitwiseMultiwayMux(Size, 1);
+            m_gNoMux.ConnectInput(0, m_gFMux.Output);
+            m_gNoMux.ConnectInput(1, m_gNoNot.Output);
+            m_gNoMux.Control[0].ConnectInput(NotOutput);
+
+            Output.ConnectInput(m_gNoMux.Output);
+
+            m_gZrOr = new MultiBitOrGate(Size);
+            m_gZrOr.ConnectInput(Output);
+            m_gZrNot = new NotGate();
+            m_gZrNot.ConnectInput(m_gZrOr.Output);
+
+            Zero.ConnectInput(m_gZrNot.Output);
+            Negative.ConnectInput(Output[Size - 1]);
         }
 
         public override bool TestGate()
