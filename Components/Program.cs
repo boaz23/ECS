@@ -36,6 +36,8 @@ namespace Components
             TestGate(new BitwiseMultiwayMux(2, 2));
             TestGate(new MultiwayDemuxGate(3));
             TestGate(new BitwiseMultiwayDemux(2, 3));
+
+            TestGate<HalfAdder>();
         }
 
         private static void TestGate<T>() where T : Gate, new()
