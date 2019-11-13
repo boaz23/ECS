@@ -62,7 +62,7 @@ namespace Components
             NotY = new Wire();
             F = new Wire();
             NotOutput = new Wire();
-            Negative = new Wire();            
+            Negative = new Wire();
             Zero = new Wire();
 
 
@@ -130,7 +130,120 @@ namespace Components
 
         public override bool TestGate()
         {
-            throw new NotImplementedException();
+            int wordBitsFilter = WordBitsFilter();
+            var wsFlags = new WireSet(6);
+            int inputPermutationsCount = (int)Math.Pow(2, Size);
+            int flagsPermutationsCount = (int)Math.Pow(2, wsFlags.Size);
+            for (int i = 0; i < inputPermutationsCount; i++)
+            {
+                InputX.SetValue(i);
+                for (int j = 0; j < inputPermutationsCount; j++)
+                {
+                    InputY.SetValue(j);
+                    for (int k = 0; k < flagsPermutationsCount; k++)
+                    {
+                        wsFlags.SetValue(k);
+                        SetFlags(wsFlags);
+                        bool test = Test(
+                            wordBitsFilter,
+                            InputX.Get2sComplement(),
+                            InputY.Get2sComplement(),
+                            ZeroX.Value,
+                            NotX.Value,
+                            ZeroY.Value,
+                            NotY.Value,
+                            F.Value,
+                            NotOutput.Value
+                        );
+                        if (!test)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private int WordBitsFilter()
+        {
+            return (int)Math.Pow(2, Size) - 1;
+        }
+
+        private void SetFlags(WireSet wsFlags)
+        {
+            ZeroX.Value = wsFlags[0].Value;
+            NotX.Value = wsFlags[1].Value;
+            ZeroY.Value = wsFlags[2].Value;
+            NotY.Value = wsFlags[3].Value;
+            F.Value = wsFlags[4].Value;
+            NotOutput.Value = wsFlags[5].Value;
+        }
+
+        private bool Test(int wordBitsFilter, int x, int y, int zx, int nx, int zy, int ny, int f, int no)
+        {
+            if (zx != 0)
+            {
+                x = 0;
+            }
+            if (nx != 0)
+            {
+                x = ~x;
+            }
+            if (zy != 0)
+            {
+                y = 0;
+            }
+            if (ny != 0)
+            {
+                y = ~y;
+            }
+
+            int output;
+            if (f == 0)
+            {
+                output = x & y;
+            }
+            else
+            {
+                output = x + y;
+            }
+
+            if (no != 0)
+            {
+                output = ~output;
+            }
+
+            output = output & wordBitsFilter;
+            var wsExpectedOutput = new WireSet(Size);
+            wsExpectedOutput.Set2sComplement(output);
+
+            int expectedZr = output == 0 ? 1 : 0;
+            int expectedNg = wsExpectedOutput.Get2sComplement() < 0 ? 1 : 0;
+            return TestOutput(wsExpectedOutput, expectedZr, expectedNg);
+        }
+
+        private bool TestOutput(WireSet expectedOutput, int expectedZr, int expectedNg)
+        {
+            if (Zero.Value != expectedZr)
+            {
+                return false;
+            }
+            if (Negative.Value != expectedNg)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < Output.Size; i++)
+            {
+                if (Output[i].Value != expectedOutput[i].Value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

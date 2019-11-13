@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -12,8 +13,13 @@ namespace Components
             //This is an example of a testing code that you should run for all the gates that you create
 
             //Create a gate
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
             TestGates();
             TestWireSet();
+
+            stopwatch.Stop();
+            Console.WriteLine("Tests time: {0}", stopwatch.ElapsedMilliseconds);
             Console.WriteLine("done");
         }
 
@@ -40,6 +46,7 @@ namespace Components
             TestGate<HalfAdder>();
             TestGate<FullAdder>();
             TestGate(new MultiBitAdder(4));
+            TestGate(new ALU(4));
         }
 
         private static void TestGate<T>() where T : Gate, new()
