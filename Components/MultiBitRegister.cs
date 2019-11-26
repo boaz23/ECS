@@ -16,6 +16,7 @@ namespace Components
         //Word size - number of bits in the register
         public int Size { get; private set; }
 
+        private SingleBitRegister[] m_registers;
 
         public MultiBitRegister(int iSize)
         {
@@ -25,6 +26,16 @@ namespace Components
             Load = new Wire();
             //your code here
 
+            m_registers = new SingleBitRegister[Size];
+            for (int i = 0; i < Size; i++)
+            {
+                var register = new SingleBitRegister();
+                m_registers[i] = register;
+
+                register.ConnectInput(Input[i]);
+                Output[i].ConnectInput(register.Output);
+                register.ConnectLoad(Load);
+            }
         }
 
         public void ConnectInput(WireSet wsInput)
@@ -41,7 +52,29 @@ namespace Components
 
         public override bool TestGate()
         {
-            throw new NotImplementedException();
+            int maxInput = (int)Math.Pow(2, Size);
+            for (int i = 0; i < maxInput; i++)
+            {
+                Load.Value = 1;
+                Input.SetValue(i);
+                Clock.ClockDown();
+                Clock.ClockUp();
+                Input.SetValue(i + 1);
+                if (Output.GetValue() != i)
+                {
+                    return false;
+                }
+
+                Load.Value = 0;
+                Clock.ClockDown();
+                Clock.ClockUp();
+                if (Output.GetValue() != i)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

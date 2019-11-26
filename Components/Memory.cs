@@ -23,6 +23,10 @@ namespace Components
 
         //your code here
 
+        private BitwiseMultiwayMux m_outputMux;
+        private MultiwayDemuxGate m_addressDemux;
+        private MultiBitRegister[] m_registers;
+
         public Memory(int iAddressSize, int iWordSize)
         {
             AddressSize = iAddressSize;
@@ -34,7 +38,36 @@ namespace Components
             Load = new Wire();
 
             //your code here
+            ConnectWritingDemux();
+            ConnectReadingMux();
+            ConnectRegisters();
+        }
 
+        private void ConnectRegisters()
+        {
+            m_registers = new MultiBitRegister[(int)Math.Pow(2, AddressSize)];
+            for (int i = 0; i < m_registers.Length; i++)
+            {
+                var register = new MultiBitRegister(WordSize);
+                m_registers[i] = register;
+                register.ConnectInput(Input);
+                register.Load.ConnectInput(m_addressDemux.Outputs[i]);
+                m_outputMux.Inputs[i].ConnectInput(register.Output);
+            }
+        }
+
+        private void ConnectReadingMux()
+        {
+            m_outputMux = new BitwiseMultiwayMux(WordSize, AddressSize);
+            m_outputMux.ConnectControl(Address);
+            Output.ConnectInput(m_outputMux.Output);
+        }
+
+        private void ConnectWritingDemux()
+        {
+            m_addressDemux = new MultiwayDemuxGate(AddressSize);
+            m_addressDemux.ConnectControl(Address);
+            m_addressDemux.ConnectInput(Load);
         }
 
         public void ConnectInput(WireSet wsInput)
@@ -57,12 +90,58 @@ namespace Components
 
         public override string ToString()
         {
-            throw new NotImplementedException();
+            return Output.ToString();
         }
 
         public override bool TestGate()
         {
-            throw new NotImplementedException();
+            int maxInputValue = (int)Math.Pow(2, WordSize);
+            for (int i = 0; i < m_registers.Length; i++)
+            {
+                Address.SetValue(i);
+                ZeroOutRegister();
+                if (!TestRegister(maxInputValue))
+                {
+                    return false;
+                }
+                ZeroOutRegister();
+            }
+
+            return true;
+        }
+
+        private bool TestRegister(int maxInputValue)
+        {
+            for (int i = 0; i < maxInputValue; i++)
+            {
+                Load.Value = 1;
+                Input.SetValue(i);
+                Clock.ClockDown();
+                Clock.ClockUp();
+                Input.SetValue(i + 1);
+                if (Output.GetValue() != i)
+                {
+                    return false;
+                }
+
+                Load.Value = 0;
+                Clock.ClockDown();
+                Clock.ClockUp();
+                if (Output.GetValue() != i)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void ZeroOutRegister()
+        {
+            Load.Value = 1;
+            Input.SetValue(0);
+            Clock.ClockDown();
+            Clock.ClockUp();
         }
     }
 }

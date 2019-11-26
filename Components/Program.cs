@@ -16,7 +16,7 @@ namespace Components
             Stopwatch stopwatch = Stopwatch.StartNew();
 
             TestGates();
-            TestWireSet();
+            //TestWireSet();
 
             stopwatch.Stop();
             Console.WriteLine("Tests time: {0}", stopwatch.ElapsedMilliseconds);
@@ -25,28 +25,32 @@ namespace Components
 
         private static void TestGates()
         {
-            TestGate<AndGate>();
-            TestGate<OrGate>();
-            TestGate<XorGate>();
-            TestGate(new MultiBitAndGate(5));
-            TestGate(new MultiBitOrGate(5));
+            //TestGate<AndGate>();
+            //TestGate<OrGate>();
+            //TestGate<XorGate>();
+            //TestGate(new MultiBitAndGate(5));
+            //TestGate(new MultiBitOrGate(5));
 
-            TestGate<MuxGate>();
-            TestGate<Demux>();
-            TestGate(new BitwiseAndGate(5));
-            TestGate(new BitwiseOrGate(5));
-            TestGate(new BitwiseNotGate(5), false);
-            TestGate(new BitwiseMux(5));
-            TestGate(new BitwiseDemux(5));
-            TestGate(new MultiwayMuxGate(3));
-            TestGate(new BitwiseMultiwayMux(2, 3));
-            TestGate(new MultiwayDemuxGate(3));
-            TestGate(new BitwiseMultiwayDemux(2, 3));
+            //TestGate<MuxGate>();
+            //TestGate<Demux>();
+            //TestGate(new BitwiseAndGate(5));
+            //TestGate(new BitwiseOrGate(5));
+            //TestGate(new BitwiseNotGate(5), false);
+            //TestGate(new BitwiseMux(5));
+            //TestGate(new BitwiseDemux(5));
+            //TestGate(new MultiwayMuxGate(3));
+            //TestGate(new BitwiseMultiwayMux(2, 3));
+            //TestGate(new MultiwayDemuxGate(3));
+            //TestGate(new BitwiseMultiwayDemux(2, 3));
 
-            TestGate<HalfAdder>();
-            TestGate<FullAdder>();
-            TestGate(new MultiBitAdder(4));
-            TestGate(new ALU(4));
+            //TestGate<HalfAdder>();
+            //TestGate<FullAdder>();
+            //TestGate(new MultiBitAdder(4));
+            //TestGate(new ALU(4));
+
+            TestGate<SingleBitRegister>();
+            TestGate(new MultiBitRegister(4));
+            TestGate(new Memory(3, 4));
         }
 
         private static void TestGate<T>() where T : Gate, new()
@@ -68,6 +72,14 @@ namespace Components
                     Console.WriteLine("bugbug");
 
                 NAndGate.Corrupt = false;
+            }
+        }
+
+        private static void TestGate(SequentialGate gate)
+        {
+            if (!gate.TestGate())
+            {
+                Console.WriteLine("bugbug");
             }
         }
 
