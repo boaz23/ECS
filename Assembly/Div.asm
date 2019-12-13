@@ -1,4 +1,4 @@
-// Copy arguments to "labels" and declare variables
+// Decalre and initalize variables (copying arguments to variables too)
 
 // k = 0
 @k

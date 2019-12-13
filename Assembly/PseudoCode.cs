@@ -27,9 +27,11 @@ public class PseudoCode
             while (r1 < n) // while (!(n - r1 <= 0))
             {
                 r3 = r3 + r2;
+                r1 = r1 + 1;
             }
 
             p = r3;
+            r0 = r0 + 1;
         }
     }
 }
