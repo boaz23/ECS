@@ -79,7 +79,8 @@ M=0
 	D=M
 	@p
 	M=D
-
+	
+	// outer loop step increment
 	// R0 = R0 + 1
 	@R0
 	M=M+1
