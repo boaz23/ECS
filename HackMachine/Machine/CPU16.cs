@@ -78,27 +78,60 @@ namespace Machine
 
         //add here components to implement the control unit 
         private BitwiseMultiwayMux m_gJumpMux;//an example of a control unit compnent - a mux that controls whether a jump is made
-        
+        private WireSet m_cInstructionResetWs;
+        private BitwiseAndGate m_gInstructionAnd;
+        private BitwiseMux m_gInstructionMux;
+        private NotGate m_gALoadInstructionNot;
+        private OrGate m_gALoadOr;
 
         private void ConnectControls()
         {
             //1. connect control of mux 1 (selects entrance to register A)
+            m_gAMux.ConnectControl(Instruction[Instruction.Size - 1]);
 
             //2. connect control to mux 2 (selects A or M entrance to the ALU)
-
+            m_gMAMux.ConnectControl(Instruction[12]);
 
             //3. consider all instruction bits only if C type instruction (MSB of instruction is 1)
-            
+            m_cInstructionResetWs = new WireSet(Size);
+            int[] cInstructionResetWsValues = new int[] { 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, };
+            for (int i = 0; i < Size; i++)
+            {
+                m_cInstructionResetWs[i].Value = cInstructionResetWsValues[i];
+            }
+
+            m_gInstructionAnd = new BitwiseAndGate(Size);
+            m_gInstructionAnd.Input1.ConnectInput(Instruction);
+            m_gInstructionAnd.Input2.ConnectInput(m_cInstructionResetWs);
+            m_gInstructionMux = new BitwiseMux(Size);
+            m_gInstructionMux.Input1.ConnectInput(m_gInstructionAnd.Output);
+            m_gInstructionMux.Input2.ConnectInput(Instruction);
+            m_gInstructionMux.ConnectControl(Instruction[Instruction.Size - 1]);
+
             //4. connect ALU control bits
+            m_gALU.ZeroX.ConnectInput(m_gInstructionMux.Output[11]);
+            m_gALU.NotX.ConnectInput(m_gInstructionMux.Output[10]);
+            m_gALU.ZeroY.ConnectInput(m_gInstructionMux.Output[9]);
+            m_gALU.NotY.ConnectInput(m_gInstructionMux.Output[8]);
+            m_gALU.F.ConnectInput(m_gInstructionMux.Output[7]);
+            m_gALU.NotOutput.ConnectInput(m_gInstructionMux.Output[6]);
 
             //5. connect control to register D (very simple)
+            m_rD.Load.ConnectInput(m_gInstructionMux.Output[4]);
 
             //6. connect control to register A (a bit more complicated)
+            m_gALoadInstructionNot = new NotGate();
+            m_gALoadInstructionNot.Input.ConnectInput(Instruction[Instruction.Size - 1]);
+            m_gALoadOr = new OrGate();
+            m_gALoadOr.Input1.ConnectInput(m_gALoadInstructionNot.Output);
+            m_gALoadOr.Input2.ConnectInput(Instruction[5]);
+            m_rA.Load.ConnectInput(m_gALoadOr.Output);
 
             //7. connect control to MemoryWrite
+            MemoryWrite.ConnectInput(Instruction[3]);
 
             //8. create inputs for jump mux
-            
+
 
             //9. connect jump mux (this is the most complicated part)
             m_gJumpMux = new BitwiseMultiwayMux(1, 3);

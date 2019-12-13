@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -13,21 +14,26 @@ namespace Machine
         [STAThread]
         static void Main(string[] args)
         {
-            Machine16 machine = new Machine16(false, true);
-            machine.Code.LoadFromFile(@"D:\Teaching\ECS\Excersises\Ex2\Assembly examples\ScreenExample.hack");
+            const string FilePath = @"D:\Programming - University\Electronic Computing Systems\HackMachine\Assembly examples\Copy1To0.hack";
+
+            Machine16 machine = new Machine16(false, false);
+            machine.Code.LoadFromFile(FilePath);
+            int linesCount = File.ReadAllLines(FilePath).Length;
+
             machine.Data[0] = 100;
             machine.Data[1] = 15;
             DateTime dtStart = DateTime.Now;
             machine.Reset();
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < linesCount; i++)
             {
                 machine.CPU.PrintState();
                 Console.WriteLine();
                 Clock.ClockDown();
                 Clock.ClockUp();
             }
-            
 
+
+            Console.WriteLine(machine.Data[0]);
             Console.WriteLine("Done " + (DateTime.Now - dtStart).TotalSeconds);
             Console.ReadLine();
         }
