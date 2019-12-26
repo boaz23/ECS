@@ -12,12 +12,14 @@ namespace Assembler
         private const int WORD_SIZE = 16;
 
         private Dictionary<string, int[]> m_dControl, m_dJmp; //these dictionaries map command mnemonics to machine code - they are initialized at the bottom of the class
+        private readonly char[] m_dest;
 
         //more data structures here (symbol map, ...)
 
         public Assembler()
         {
             InitCommandDictionaries();
+            m_dest = new char[] { 'A', 'D', 'M' };
         }
 
         //this method is called from the outside to run the assembler translation
@@ -134,19 +136,31 @@ namespace Assembler
             for (int i = 0; i < lLines.Count; i++)
             {
                 sLine = lLines[i];
+                string translatedLine;
                 if (IsACommand(sLine))
                 {
                     //translate an A command into a sequence of bits
+                    translatedLine = TranslateACommand(sLine);
                 }
                 else if (IsCCommand(sLine))
                 {
-                    string sDest, sControl, sJmp;
-                    GetCommandParts(sLine, out sDest, out sControl, out sJmp);
                     //translate an C command into a sequence of bits
                     //take a look at the dictionaries m_dControl, m_dJmp, and where they are initialized (InitCommandDictionaries), to understand how to you them here
+                    translatedLine = TranslateCCommand(sLine);
                 }
                 else
+                {
+                    translatedLine = null;
+                }
+
+                if (translatedLine != null)
+                {
+                    lAfterPass.Add(translatedLine);
+                }
+                else
+                {
                     throw new FormatException("Cannot parse line " + i + ": " + lLines[i]);
+                }
             }
             return lAfterPass;
         }
@@ -274,6 +288,149 @@ namespace Assembler
             m_dJmp["JNE"] = new int[] { 1, 0, 1 };
             m_dJmp["JLE"] = new int[] { 1, 1, 0 };
             m_dJmp["JMP"] = new int[] { 1, 1, 1 };
+        }
+
+        private string TranslateACommand(string line)
+        {
+            if (IsNumberACommand(line))
+            {
+                return TranslateNumberACommand(line);
+            }
+            else
+            {
+                // Transelate label A command
+                return null;
+            }
+        }
+
+        private string TranslateNumberACommand(string line)
+        {
+            int a;
+            if (TryParseANumber(line, out a))
+            {
+                if (!IsValidANumber(a))
+                {
+                    return null;
+                }
+
+                return ToBinary(a);
+            }
+
+            return null;
+        }
+
+        private bool TryParseANumber(string line, out int a)
+        {
+            return int.TryParse(line.Substring(1), out a);
+        }
+
+        private bool IsNumberACommand(string line)
+        {
+            return char.IsDigit(line[1]);
+        }
+
+        private bool IsValidANumber(int a)
+        {
+            return 0 <= a && a < Math.Pow(2, WORD_SIZE - 1);
+        }
+
+        private string TranslateCCommand(string sLine)
+        {
+            string translatedLine;
+            string sDest, sControl, sJmp;
+            GetCommandParts(sLine, out sDest, out sControl, out sJmp);
+            translatedLine = TranslateCCommandFields(sDest, sControl, sJmp);
+            return translatedLine;
+        }
+
+        private string TranslateDestToBits(string dest)
+        {
+            if (!IsValidDest(dest))
+            {
+                return null;
+            }
+
+            return TranslateDestToBitsCore(dest);
+        }
+
+        private bool IsValidDest(string dest)
+        {
+            for (int i = 0; i < m_dest.Length && i < dest.Length; i++)
+            {
+                if (!IsValidDestChar(dest[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool IsValidDestChar(char c)
+        {
+            return m_dest.Contains(c);
+        }
+
+        private string TranslateDestToBitsCore(string dest)
+        {
+            string destBits = "";
+            for (int i = 0; i < m_dest.Length; i++)
+            {
+                destBits += GetDestBit(dest, m_dest[i]);
+            }
+
+            return destBits;
+        }
+
+        private string GetDestBit(string dest, char reg)
+        {
+            if (dest.Contains(reg))
+            {
+                return "1";
+            }
+            else
+            {
+                return "0";
+            }
+        }
+
+        private string TranslateCCommandFields(string sDest, string sControl, string sJmp)
+        {
+            sDest = TranslateDestToBits(sDest);
+            return TranslateCCommandFieldsCore(sDest, sControl, sJmp);
+        }
+
+        private string TranslateCCommandFieldsCore(string sDest, string sControl, string sJmp)
+        {
+            if (!AreCCommandFieldsValid(sDest, sControl, sJmp))
+            {
+                return null;
+            }
+
+            return GetCCommandFieldBits(sDest, sControl, sJmp);
+        }
+
+        private bool AreCCommandFieldsValid(string sDest, string sControl, string sJmp)
+        {
+            if (sDest == null)
+            {
+                return false;
+            }
+            if (!m_dControl.ContainsKey(sControl))
+            {
+                return false;
+            }
+            if (!m_dJmp.ContainsKey(sJmp))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private string GetCCommandFieldBits(string sDest, string sControl, string sJmp)
+        {
+            return "111" + ToString(m_dControl[sControl]) + sDest + ToString(m_dJmp[sJmp]);
         }
     }
 }

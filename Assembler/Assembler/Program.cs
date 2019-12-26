@@ -15,7 +15,7 @@ namespace Assembler
             //string sourceFileLocation = the path to your source file
             //string destFileLocation = the path to your dest file
             //a.TranslateAssemblyFile(sourceFileLocation, destFileLocation);
-            a.TranslateAssemblyFile(@"Add.asm", @"Add.mc");
+            a.TranslateAssemblyFile(@"MaxL.asm", @"MaxL.mc");
         }
     }
 }
