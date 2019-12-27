@@ -98,10 +98,11 @@ namespace Assembler
 
             if (IsCCommand(sLine))
             {
-                string sDest, sCompute, sJmp;
-                GetCommandParts(sLine, out sDest, out sCompute, out sJmp);
                 //your code here - check for indirect addessing and for jmp shortcuts
                 //read the word file to see all the macros you need to support
+                string sDest, sCompute, sJmp;
+                GetCommandParts(sLine, out sDest, out sCompute, out sJmp);
+                ExpandMacro(lExpanded, sLine, sDest, sCompute, sJmp);
             }
             if (lExpanded.Count == 0)
                 lExpanded.Add(sLine);
@@ -369,7 +370,12 @@ namespace Assembler
 
         private bool IsNumberACommand(string line)
         {
-            return char.IsDigit(line[1]);
+            return IsNumber(line[1]);
+        }
+
+        private bool IsNumber(char c)
+        {
+            return char.IsDigit(c);
         }
 
         private bool IsValidANumber(int a)
@@ -409,13 +415,23 @@ namespace Assembler
 
         private void ValidateDest(string dest)
         {
+            if (!IsValidDest(dest))
+            {
+                throw new AssemblerException($"'{dest}' is not a valid dest field");
+            }
+        }
+
+        private bool IsValidDest(string dest)
+        {
             for (int i = 0; i < m_dest.Length && i < dest.Length; i++)
             {
                 if (!IsValidDestChar(dest[i]))
                 {
-                    throw new AssemblerException($"'{dest}' is not a valid dest field");
+                    return false;
                 }
             }
+
+            return true;
         }
 
         private bool IsValidDestChar(char c)
@@ -455,7 +471,7 @@ namespace Assembler
         private void ValidateCCommandFields(string sDest, string sControl, string sJmp)
         {
             ValidateDest(sDest);
-            if (!m_dControl.ContainsKey(sControl))
+            if (!IsValidComp(sControl))
             {
                 throw new AssemblerException($"'{sControl}' is not a valid comp field");
             }
@@ -463,6 +479,11 @@ namespace Assembler
             {
                 throw new AssemblerException($"'{sJmp}' is not a valid jump field");
             }
+        }
+
+        private bool IsValidComp(string sControl)
+        {
+            return m_dControl.ContainsKey(sControl);
         }
 
         private string GetCCommandFieldBits(string sDest, string sControl, string sJmp)
@@ -536,6 +557,139 @@ namespace Assembler
         private bool DoesLabelHasValue(string label)
         {
             return m_symbolsMap[label] != EMPTY_SYMBOL_VALUE;
+        }
+
+        private void ExpandMacro(List<string> lExpanded, string sLine, string sDest, string sCompute, string sJmp)
+        {
+            if (IsValidDest(sDest))
+            {
+                if (IsValidComp(sCompute))
+                {
+                    string sJmpTo;
+                    string sCmd;
+                    GetJumpParts(sLine, out sCmd, out sJmpTo);
+                    if (sJmpTo == "")
+                    {
+                        // assume regular C command
+                        // do nothing
+                    }
+                    else
+                    {
+                        // assume dest=comp;jump:jump_to
+                        ExpandJumpMacro(lExpanded, sJmpTo, sCmd);
+                    }
+                }
+                else if (sDest != "")
+                {
+                    if (sJmp == "")
+                    {
+                        // assume dest=label
+                        ExpandLabelToDestAssignmentMacro(lExpanded, sDest, sCompute);
+                    }
+                    else
+                    {
+                        // unkown command, just pass it to the next stage
+                        // do nothing, it should not be handled here
+                    }
+                }
+                else if (sCompute.EndsWith("++"))
+                {
+                    // assume label++
+                    ExpandIncrementLabelMacro(lExpanded, sCompute);
+                }
+                else if (sCompute.EndsWith("--"))
+                {
+                    // assume label--
+                    ExpandDecrementLabelMacro(lExpanded, sCompute);
+                }
+            }
+            else
+            {
+                if (IsValidComp(sCompute))
+                {
+                    // assume label=comp
+                    ExandCompToLabelAssignmentMacro(lExpanded, sDest, sCompute);
+                }
+                else if (IsNumber(sDest[0]))
+                {
+                    // assume label=number
+                    ExapndLabelImmediateAddressingMacro(lExpanded, sDest, sCompute);
+                }
+                else
+                {
+                    // assume label=label
+                    ExpandLabelToLabelAssignmentMacro(lExpanded, sDest, sCompute);
+                }
+            }
+        }
+
+        private static void ExpandLabelToLabelAssignmentMacro(List<string> lExpanded, string sDest, string sCompute)
+        {
+            string labelDest = sDest;
+            string labelSrc = sCompute;
+            lExpanded.Add($"@{labelSrc}");
+            lExpanded.Add("D=M");
+            lExpanded.Add($"@{labelDest}");
+            lExpanded.Add("M=D");
+        }
+
+        private static void ExapndLabelImmediateAddressingMacro(List<string> lExpanded, string sDest, string sCompute)
+        {
+            string label = sDest;
+            string sNumber = sCompute;
+            lExpanded.Add($"@{sNumber}");
+            lExpanded.Add("D=A");
+            lExpanded.Add($"@{label}");
+            lExpanded.Add("M=D");
+        }
+
+        private static void ExandCompToLabelAssignmentMacro(List<string> lExpanded, string sDest, string sCompute)
+        {
+            string label = sDest;
+            lExpanded.Add($"@{label}");
+            lExpanded.Add($"M={sCompute}");
+        }
+
+        private static void ExpandDecrementLabelMacro(List<string> lExpanded, string sCompute)
+        {
+            string label = sCompute.Substring(0, sCompute.Length - 2);
+            lExpanded.Add($"@{label}");
+            lExpanded.Add("M=M-1");
+        }
+
+        private static void ExpandIncrementLabelMacro(List<string> lExpanded, string sCompute)
+        {
+            string label = sCompute.Substring(0, sCompute.Length - 2);
+            lExpanded.Add($"@{label}");
+            lExpanded.Add("M=M+1");
+        }
+
+        private static void ExpandLabelToDestAssignmentMacro(List<string> lExpanded, string sDest, string sCompute)
+        {
+            string label = sCompute;
+            lExpanded.Add($"@{label}");
+            lExpanded.Add($"{sDest}=M");
+        }
+
+        private static void ExpandJumpMacro(List<string> lExpanded, string sJmpTo, string sCmd)
+        {
+            lExpanded.Add($"@{sJmpTo}");
+            lExpanded.Add($"{sCmd}");
+        }
+
+        private void GetJumpParts(string jump, out string jmp, out string jmpTo)
+        {
+            int idx = jump.IndexOf(':');
+            if (idx > -1)
+            {
+                jmp = jump.Substring(0, idx);
+                jmpTo = jump.Substring(idx + 1);
+            }
+            else
+            {
+                jmp = jump;
+                jmpTo = "";
+            }
         }
     }
 }

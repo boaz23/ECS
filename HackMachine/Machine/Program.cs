@@ -16,7 +16,7 @@ namespace Machine
         {
             const string FilePath = @"Assembly examples\Product.hack";
 
-            Machine16 machine = new Machine16(false, false);
+            Machine16 machine = new Machine16(bUseKeyboard: false, bUseScreen: true);
             machine.Code.LoadFromFile(FilePath);
             Func<bool>  whileCondition = GetRunningCondition(FilePath, machine);
 
