@@ -594,33 +594,88 @@ namespace Assembler
                 }
                 else if (sCompute.EndsWith("++"))
                 {
-                    // assume label++
-                    ExpandIncrementLabelMacro(lExpanded, sCompute);
+                    ExpandIncrementMacro(lExpanded, sCompute);
                 }
                 else if (sCompute.EndsWith("--"))
                 {
-                    // assume label--
-                    ExpandDecrementLabelMacro(lExpanded, sCompute);
+                    ExpandDecrementMacro(lExpanded, sCompute);
                 }
             }
             else
             {
-                if (IsValidComp(sCompute))
-                {
-                    // assume label=comp
-                    ExandCompToLabelAssignmentMacro(lExpanded, sDest, sCompute);
-                }
-                else if (IsNumber(sDest[0]))
-                {
-                    // assume label=number
-                    ExapndLabelImmediateAddressingMacro(lExpanded, sDest, sCompute);
-                }
-                else
-                {
-                    // assume label=label
-                    ExpandLabelToLabelAssignmentMacro(lExpanded, sDest, sCompute);
-                }
+                ExpandAssigmentToLabel(lExpanded, sDest, sCompute);
             }
+        }
+
+        private void ExpandAssigmentToLabel(List<string> lExpanded, string sDest, string sCompute)
+        {
+            if (IsValidComp(sCompute))
+            {
+                // assume label=comp
+                ExandCompToLabelAssignmentMacro(lExpanded, sDest, sCompute);
+            }
+            else if (IsNumber(sCompute[0]))
+            {
+                // assume label=number
+                ExapndLabelImmediateAddressingMacro(lExpanded, sDest, sCompute);
+            }
+            else
+            {
+                // assume label=label
+                ExpandLabelToLabelAssignmentMacro(lExpanded, sDest, sCompute);
+            }
+        }
+
+        private void ExpandDecrementMacro(List<string> lExpanded, string sCompute)
+        {
+            string decrementVar = sCompute.Substring(0, sCompute.Length - 2);
+            if (decrementVar == "")
+            {
+                // line is '--'
+                // do nothing
+            }
+            else if (IsValidDest(decrementVar))
+            {
+                // dest--, for example D--
+                // it must be only 1 dest field
+                ExpandDestDecrementMacro(lExpanded, decrementVar);
+            }
+            else
+            {
+                // assume label--
+                ExpandDecrementLabelMacro(lExpanded, decrementVar);
+            }
+        }
+
+        private void ExpandIncrementMacro(List<string> lExpanded, string sCompute)
+        {
+            string incrementVar = sCompute.Substring(0, sCompute.Length - 2);
+            if (incrementVar == "")
+            {
+                // line is '++'
+                // do nothing
+            }
+            else if (IsValidDest(incrementVar))
+            {
+                // dest++, for example D++
+                // it must be only 1 dest field
+                ExpandDestIncrementMacro(lExpanded, incrementVar);
+            }
+            else
+            {
+                // assume label++
+                ExpandIncrementLabelMacro(lExpanded, incrementVar);
+            }
+        }
+
+        private static void ExpandDestDecrementMacro(List<string> lExpanded, string decrementVar)
+        {
+            lExpanded.Add($"{decrementVar}={decrementVar}-1");
+        }
+
+        private static void ExpandDestIncrementMacro(List<string> lExpanded, string incrementVar)
+        {
+            lExpanded.Add($"{incrementVar}={incrementVar}+1");
         }
 
         private static void ExpandLabelToLabelAssignmentMacro(List<string> lExpanded, string sDest, string sCompute)
@@ -650,16 +705,14 @@ namespace Assembler
             lExpanded.Add($"M={sCompute}");
         }
 
-        private static void ExpandDecrementLabelMacro(List<string> lExpanded, string sCompute)
+        private static void ExpandDecrementLabelMacro(List<string> lExpanded, string label)
         {
-            string label = sCompute.Substring(0, sCompute.Length - 2);
             lExpanded.Add($"@{label}");
             lExpanded.Add("M=M-1");
         }
 
-        private static void ExpandIncrementLabelMacro(List<string> lExpanded, string sCompute)
+        private static void ExpandIncrementLabelMacro(List<string> lExpanded, string label)
         {
-            string label = sCompute.Substring(0, sCompute.Length - 2);
             lExpanded.Add($"@{label}");
             lExpanded.Add("M=M+1");
         }

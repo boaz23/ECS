@@ -17,7 +17,7 @@ namespace Assembler
             //string destFileLocation = the path to your dest file
             //a.TranslateAssemblyFile(sourceFileLocation, destFileLocation);
 
-            a.TranslateAssemblyFile("Add.asm", "Add.mc");
+            //a.TranslateAssemblyFile("Add.asm", "Add.mc");
             //TranslateAssemblyFile("Add");
             //TranslateAssemblyFile("MaxL");
             //TranslateAssemblyFile("Max");
@@ -26,6 +26,10 @@ namespace Assembler
             //TranslateAssemblyFile("Fibonacci");
             //TranslateAssemblyFile("ScreenExample");
             //TranslateAssemblyFile("SquareMacro");
+            //TranslateAssemblyFile(@"My Examples\InfiniteLoop");
+            TranslateAssemblyFile(@"My Examples\SimpleForLoop");
+            TranslateAssemblyFile(@"My Examples\SimpleForLoop2");
+            TranslateAssemblyFile(@"My Examples\TestAll");
         }
 
         static void TranslateAssemblyFile(string fileName)

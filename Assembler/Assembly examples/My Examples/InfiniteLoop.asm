@@ -1,0 +1,2 @@
+(INF_LOOP)
+0;JMP:INF_LOOP

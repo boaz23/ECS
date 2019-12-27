@@ -1,0 +1,8 @@
+i=10
+(FOR_LOOP)
+D=i
+D;JGT:END
+R0=i
+i--
+0;JMP:FOR_LOOP
+(END)
