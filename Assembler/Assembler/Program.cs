@@ -17,16 +17,16 @@ namespace Assembler
             //string destFileLocation = the path to your dest file
             //a.TranslateAssemblyFile(sourceFileLocation, destFileLocation);
 
-            //a.TranslateAssemblyFile("Add.asm", "Add.mc");
-            //TranslateAssemblyFile("Add");
-            //TranslateAssemblyFile("MaxL");
-            //TranslateAssemblyFile("Max");
-            //TranslateAssemblyFile("Div");
-            //TranslateAssemblyFile("Power");
-            //TranslateAssemblyFile("Fibonacci");
-            //TranslateAssemblyFile("ScreenExample");
-            //TranslateAssemblyFile("SquareMacro");
-            //TranslateAssemblyFile(@"My Examples\InfiniteLoop");
+            a.TranslateAssemblyFile("Add.asm", "Add.mc");
+            TranslateAssemblyFile("Add");
+            TranslateAssemblyFile("MaxL");
+            TranslateAssemblyFile("Max");
+            TranslateAssemblyFile("Div");
+            TranslateAssemblyFile("Power");
+            TranslateAssemblyFile("Fibonacci");
+            TranslateAssemblyFile("ScreenExample");
+            TranslateAssemblyFile("SquareMacro");
+            TranslateAssemblyFile(@"My Examples\InfiniteLoop");
             TranslateAssemblyFile(@"My Examples\SimpleForLoop");
             TranslateAssemblyFile(@"My Examples\SimpleForLoop2");
             TranslateAssemblyFile(@"My Examples\TestAll");

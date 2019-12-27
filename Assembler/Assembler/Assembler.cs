@@ -24,7 +24,6 @@ namespace Assembler
         public Assembler()
         {
             InitCommandDictionaries();
-            InitSymbolsDataStructures();
             m_dest = new char[] { 'A', 'D', 'M' };
         }
 
@@ -112,6 +111,7 @@ namespace Assembler
         //second pass - record all symbols - labels and variables
         private List<string> CreateSymbolTable(List<string> lLines)
         {
+            InitSymbolsDataStructures();
             List<string> newLines = AddSymbols(lLines);
             ResolveUnsetSymbols();
             return newLines;
@@ -157,19 +157,6 @@ namespace Assembler
             }
 
             return newLines;
-        }
-
-        private void ParseALabelCommandSymbol(string sLine)
-        {
-            if (!IsNumberACommand(sLine))
-            {
-                string label = GetACommandValue(sLine);
-                if (!m_symbolsMap.ContainsKey(label))
-                {
-                    m_symbolsMap.Add(label, EMPTY_SYMBOL_VALUE);
-                    m_symbols.AddLast(label);
-                }
-            }
         }
 
         //third pass - translate lines into machine code, replacing symbols with numbers
@@ -357,7 +344,7 @@ namespace Assembler
             int a;
             if (!TryParseANumber(line, out a))
             {
-                throw new AssemblerException("Expected a number for A command");
+                throw new AssemblerException($"Expected a number for A command: '{GetACommandValue(line)}'");
             }
 
             return a;
@@ -398,7 +385,7 @@ namespace Assembler
         {
             if (!IsValidANumber(a))
             {
-                throw new AssemblerException("Number for A command is out of range (valid values are [0,2^15-1])");
+                throw new AssemblerException($"Number {a} for A command is out of range (valid values are [0,2^15-1])");
             }
 
             return ToBinary(a);
@@ -509,7 +496,7 @@ namespace Assembler
             {
                 if (m_symbolsMap.ContainsKey(label) && DoesLabelHasValue(label))
                 {
-                    throw new AssemblerException("Duplicate definition of a line label");
+                    throw new AssemblerException($"Duplicate definition of a line label '{label}'");
                 }
                 m_symbolsMap[label] = iLine;
                 m_symbols.AddLast(label);
@@ -520,6 +507,19 @@ namespace Assembler
             }
 
             return isValidLabel;
+        }
+
+        private void ParseALabelCommandSymbol(string sLine)
+        {
+            if (!IsNumberACommand(sLine))
+            {
+                string label = GetACommandValue(sLine);
+                if (!m_symbolsMap.ContainsKey(label))
+                {
+                    m_symbolsMap.Add(label, EMPTY_SYMBOL_VALUE);
+                    m_symbols.AddLast(label);
+                }
+            }
         }
 
         private string GetACommandValue(string line)
