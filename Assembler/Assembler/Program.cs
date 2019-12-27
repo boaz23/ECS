@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,19 @@ namespace Assembler
             //string sourceFileLocation = the path to your source file
             //string destFileLocation = the path to your dest file
             //a.TranslateAssemblyFile(sourceFileLocation, destFileLocation);
-            a.TranslateAssemblyFile(@"MaxL.asm", @"MaxL.mc");
+
+            TranslateAssemblyFile("Add");
+            TranslateAssemblyFile("MaxL");
+            TranslateAssemblyFile("Max");
+            TranslateAssemblyFile("Div");
+            TranslateAssemblyFile("Power");
+            TranslateAssemblyFile("Fibonacci");
+            TranslateAssemblyFile("ScreenExample");
+        }
+
+        static void TranslateAssemblyFile(string fileName)
+        {
+            new Assembler().TranslateAssemblyFile(Path.ChangeExtension(fileName, ".asm"), Path.ChangeExtension(fileName, ".mc"));
         }
     }
 }

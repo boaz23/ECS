@@ -11,14 +11,20 @@ namespace Assembler
     {
         private const int WORD_SIZE = 16;
 
+        private const int EMPTY_SYMBOL_VALUE = -1;
+        private const int VIRTUAL_REGISTERS_COUNT = 16;
+
         private Dictionary<string, int[]> m_dControl, m_dJmp; //these dictionaries map command mnemonics to machine code - they are initialized at the bottom of the class
         private readonly char[] m_dest;
 
         //more data structures here (symbol map, ...)
+        private Dictionary<string, int> m_symbolsMap;
+        private LinkedList<string> m_symbols;
 
         public Assembler()
         {
             InitCommandDictionaries();
+            InitSymbolsDataStructures();
             m_dest = new char[] { 'A', 'D', 'M' };
         }
 
@@ -55,10 +61,10 @@ namespace Assembler
             List<string> lAfterMacroExpansion = ExpendMacros(lLines);
 
             //first pass - create symbol table and remove lable lines
-            CreateSymbolTable(lAfterMacroExpansion);
+            List<string> lAfterSymbolsParsing = CreateSymbolTable(lAfterMacroExpansion);
 
             //second pass - replace symbols with numbers, and translate to machine code
-            List<string> lAfterTranslation = TranslateAssemblyToMachineCode(lAfterMacroExpansion);
+            List<string> lAfterTranslation = TranslateAssemblyToMachineCode(lAfterSymbolsParsing);
             return lAfterTranslation;
         }
 
@@ -103,31 +109,68 @@ namespace Assembler
         }
 
         //second pass - record all symbols - labels and variables
-        private void CreateSymbolTable(List<string> lLines)
+        private List<string> CreateSymbolTable(List<string> lLines)
+        {
+            List<string> newLines = AddSymbols(lLines);
+            ResolveUnsetSymbols();
+            return newLines;
+        }
+
+        private List<string> AddSymbols(List<string> lLines)
         {
             string sLine = "";
+            int iLine = 0;
+            List<string> newLines = new List<string>();
             for (int i = 0; i < lLines.Count; i++)
             {
                 sLine = lLines[i];
+                bool isValidLine;
                 if (IsLabelLine(sLine))
                 {
                     //record label in symbol table
                     //do not add the label line to the result
+                    isValidLine = ParseLabelLineSymbol(sLine, iLine);
                 }
                 else if (IsACommand(sLine))
                 {
                     //may contain a variable - if so, record it to the symbol table (if it doesn't exist there yet...)
+                    ParseALabelCommandSymbol(sLine);
+                    iLine++;
+                    isValidLine = true;
+                    newLines.Add(sLine);
                 }
                 else if (IsCCommand(sLine))
                 {
                     //do nothing here
+                    iLine++;
+                    isValidLine = true;
+                    newLines.Add(sLine);
                 }
                 else
+                    isValidLine = false;
+
+                if (!isValidLine)
+                {
                     throw new FormatException("Cannot parse line " + i + ": " + lLines[i]);
+                }
             }
-          
+
+            return newLines;
         }
-        
+
+        private void ParseALabelCommandSymbol(string sLine)
+        {
+            if (!IsNumberACommand(sLine))
+            {
+                string label = GetACommandValue(sLine);
+                if (!m_symbolsMap.ContainsKey(label))
+                {
+                    m_symbolsMap.Add(label, EMPTY_SYMBOL_VALUE);
+                    m_symbols.AddLast(label);
+                }
+            }
+        }
+
         //third pass - translate lines into machine code, replacing symbols with numbers
         private List<string> TranslateAssemblyToMachineCode(List<string> lLines)
         {
@@ -277,6 +320,9 @@ namespace Assembler
             m_dControl["D&M"] = new int[] { 1, 0, 0, 0, 0, 0, 0 };
             m_dControl["D|M"] = new int[] { 1, 0, 1, 0, 1, 0, 1 };
 
+            m_dControl["A+D"] = m_dControl["D+A"];
+            m_dControl["M+D"] = m_dControl["D+M"];
+
 
             m_dJmp = new Dictionary<string, int[]>();
 
@@ -292,36 +338,33 @@ namespace Assembler
 
         private string TranslateACommand(string line)
         {
+            int a;
             if (IsNumberACommand(line))
             {
-                return TranslateNumberACommand(line);
+                a = GetNumberACommandNumber(line);
             }
             else
             {
-                // Transelate label A command
-                return null;
+                a = GetLabelACommandNumber(line);
             }
+
+            return TranslateACommandNumberToBits(a);
         }
 
-        private string TranslateNumberACommand(string line)
+        private int GetNumberACommandNumber(string line)
         {
             int a;
-            if (TryParseANumber(line, out a))
+            if (!TryParseANumber(line, out a))
             {
-                if (!IsValidANumber(a))
-                {
-                    return null;
-                }
-
-                return ToBinary(a);
+                throw new AssemblerException("Expected a number for A command");
             }
 
-            return null;
+            return a;
         }
 
         private bool TryParseANumber(string line, out int a)
         {
-            return int.TryParse(line.Substring(1), out a);
+            return int.TryParse(GetACommandValue(line), out a);
         }
 
         private bool IsNumberACommand(string line)
@@ -334,6 +377,27 @@ namespace Assembler
             return 0 <= a && a < Math.Pow(2, WORD_SIZE - 1);
         }
 
+        private int GetLabelACommandNumber(string line)
+        {
+            string label = GetACommandValue(line);
+            if (!m_symbolsMap.ContainsKey(label))
+            {
+                throw new AssemblerException($"Use of undefined label '{label}'");
+            }
+
+            return m_symbolsMap[label];
+        }
+
+        private string TranslateACommandNumberToBits(int a)
+        {
+            if (!IsValidANumber(a))
+            {
+                throw new AssemblerException("Number for A command is out of range (valid values are [0,2^15-1])");
+            }
+
+            return ToBinary(a);
+        }
+
         private string TranslateCCommand(string sLine)
         {
             string translatedLine;
@@ -343,27 +407,15 @@ namespace Assembler
             return translatedLine;
         }
 
-        private string TranslateDestToBits(string dest)
-        {
-            if (!IsValidDest(dest))
-            {
-                return null;
-            }
-
-            return TranslateDestToBitsCore(dest);
-        }
-
-        private bool IsValidDest(string dest)
+        private void ValidateDest(string dest)
         {
             for (int i = 0; i < m_dest.Length && i < dest.Length; i++)
             {
                 if (!IsValidDestChar(dest[i]))
                 {
-                    return false;
+                    throw new AssemblerException($"'{dest}' is not a valid dest field");
                 }
             }
-
-            return true;
         }
 
         private bool IsValidDestChar(char c)
@@ -371,7 +423,7 @@ namespace Assembler
             return m_dest.Contains(c);
         }
 
-        private string TranslateDestToBitsCore(string dest)
+        private string TranslateDestToBits(string dest)
         {
             string destBits = "";
             for (int i = 0; i < m_dest.Length; i++)
@@ -396,41 +448,94 @@ namespace Assembler
 
         private string TranslateCCommandFields(string sDest, string sControl, string sJmp)
         {
-            sDest = TranslateDestToBits(sDest);
-            return TranslateCCommandFieldsCore(sDest, sControl, sJmp);
-        }
-
-        private string TranslateCCommandFieldsCore(string sDest, string sControl, string sJmp)
-        {
-            if (!AreCCommandFieldsValid(sDest, sControl, sJmp))
-            {
-                return null;
-            }
-
+            ValidateCCommandFields(sDest, sControl, sJmp);
             return GetCCommandFieldBits(sDest, sControl, sJmp);
         }
 
-        private bool AreCCommandFieldsValid(string sDest, string sControl, string sJmp)
+        private void ValidateCCommandFields(string sDest, string sControl, string sJmp)
         {
-            if (sDest == null)
-            {
-                return false;
-            }
+            ValidateDest(sDest);
             if (!m_dControl.ContainsKey(sControl))
             {
-                return false;
+                throw new AssemblerException($"'{sControl}' is not a valid comp field");
             }
             if (!m_dJmp.ContainsKey(sJmp))
             {
-                return false;
+                throw new AssemblerException($"'{sJmp}' is not a valid jump field");
             }
-
-            return true;
         }
 
         private string GetCCommandFieldBits(string sDest, string sControl, string sJmp)
         {
-            return "111" + ToString(m_dControl[sControl]) + sDest + ToString(m_dJmp[sJmp]);
+            return "111" + ToString(m_dControl[sControl]) + TranslateDestToBits(sDest) + ToString(m_dJmp[sJmp]);
+        }
+
+        private string GetLabelFromLabelLine(string line)
+        {
+            return line.Substring(1, line.Length - 2);
+        }
+
+        private bool IsValidLabel(string label)
+        {
+            return label != "";
+        }
+
+        private bool ParseLabelLineSymbol(string sLine, int iLine)
+        {
+            string label = GetLabelFromLabelLine(sLine);
+            bool isValidLabel = IsValidLabel(label);
+            if (isValidLabel)
+            {
+                if (m_symbolsMap.ContainsKey(label) && DoesLabelHasValue(label))
+                {
+                    throw new AssemblerException("Duplicate definition of a line label");
+                }
+                m_symbolsMap[label] = iLine;
+                m_symbols.AddLast(label);
+            }
+            else
+            {
+                throw new AssemblerException("Line label name cannot be empty");
+            }
+
+            return isValidLabel;
+        }
+
+        private string GetACommandValue(string line)
+        {
+            return line.Substring(1);
+        }
+
+        private void InitSymbolsDataStructures()
+        {
+            m_symbols = new LinkedList<string>();
+            m_symbolsMap = new Dictionary<string, int>
+            {
+                ["SCREEN"] = 0x4000,
+                ["KEYBOARD"] = 0x6000,
+            };
+
+            for (int i = 0; i < VIRTUAL_REGISTERS_COUNT; i++)
+            {
+                m_symbolsMap["R" + i] = i;
+            }
+        }
+
+        private void ResolveUnsetSymbols()
+        {
+            int nextLabelValue = VIRTUAL_REGISTERS_COUNT;
+            foreach (string label in m_symbols)
+            {
+                if (!DoesLabelHasValue(label))
+                {
+                    m_symbolsMap[label] = nextLabelValue++;
+                }
+            }
+        }
+
+        private bool DoesLabelHasValue(string label)
+        {
+            return m_symbolsMap[label] != EMPTY_SYMBOL_VALUE;
         }
     }
 }
