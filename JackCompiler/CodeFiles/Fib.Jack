@@ -1,0 +1,13 @@
+//recursive Fibonacci
+function int Fibonacci(int n){
+	var int n1;
+	var int n2;
+	//Base case
+	if(n < 2)
+		return n;
+	//Recursive calls
+	let n1 = Fibonacci(n - 1);
+	let n2 = Fibonacci(n - 2);
+	//Solution construction
+	return n1 + n2;
+}

@@ -1,3 +1,5 @@
+:: This compares the output of your assembler with the output of the assembler from the tools.
+:: IMPORTANT: you must save your output as .mc files and the assembler from tools as .hack files and in this folder
 echo off
 echo.
 for /r %%i in (*.asm) do (

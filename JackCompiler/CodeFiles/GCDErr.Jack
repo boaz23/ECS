@@ -1,0 +1,10 @@
+//GCD using Euclid algorithm
+function int GCD( int a, int b){
+	var int 1r;
+	while( ~(b=0) ){
+		let 1r = a -(b * (a / b));
+		let a = 2b;
+		let b = r;
+	}
+	return a;
+}
