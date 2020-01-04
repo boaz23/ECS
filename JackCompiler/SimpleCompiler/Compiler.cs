@@ -127,12 +127,11 @@ namespace SimpleCompiler
                 for (int j = 0; j < separatorSplits.Count; j++)
                 {
                     string linePart = separatorSplits[j];
-
                     while (!string.IsNullOrEmpty(linePart))
                     {
                         if (linePart.StartsWith(COMMENT_START))
                         {
-                            break;
+                            goto NEXT_LINE;
                         }
 
                         string word;
@@ -151,6 +150,8 @@ namespace SimpleCompiler
                         }
                     }
                 }
+
+            NEXT_LINE:;
             }
 
             return lTokens;
