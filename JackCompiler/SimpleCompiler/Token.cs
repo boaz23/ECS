@@ -12,7 +12,7 @@ namespace SimpleCompiler
         public static string[] Constants = { "true", "false", "null" };
         public static char[] Operators = new char[] { '*', '+', '-', '/', '<', '>', '&', '=', '|', '~' };
         public static char[] Parentheses = new char[] { '(', ')', '[', ']', '{', '}' };
-        public static char[] Separators = new char[] {  ',', ';'};
+        public static char[] Separators = new char[] { ',', ';' };
 
 
         public int Line { get; set; }
