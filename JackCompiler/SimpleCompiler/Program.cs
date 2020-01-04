@@ -78,13 +78,15 @@ namespace SimpleCompiler
 
         static void Main(string[] args)
         {
-            Test1();
-            Test2();
-            Test3();
-            Test4();
-
-
+            DoTest(nameof(Test1), Test1);
+            DoTest(nameof(Test2), Test2);
+            DoTest(nameof(Test3), Test3);
+            DoTest(nameof(Test4), Test4);
         }
 
+        private static void DoTest(string name, Func<bool> test)
+        {
+            Console.WriteLine($"{name}: {test()}");
+        }
     }
 }
