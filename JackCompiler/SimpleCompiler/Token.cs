@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace SimpleCompiler
 {
+    [DebuggerDisplay("{Line}, {Position}, '{ToString()}', {GetType().Name}")]
     public class Token
     {
         public static string[] Statements = { "function", "var", "let", "while", "if", "else", "return" };
