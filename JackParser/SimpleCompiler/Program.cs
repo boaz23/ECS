@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SimpleCompiler
 {
@@ -7,7 +8,18 @@ namespace SimpleCompiler
     {
         static void Main(string[] args)
         {
-            TestParse();
+            if (!TestParse())
+            {
+                Console.WriteLine("bugbug");
+            }
+
+#if DEBUG
+            if (Debugger.IsAttached)
+            {
+                Console.Write("Press any key to continue . . . ");
+                Console.ReadKey(true);
+            }
+#endif
         }
 
         public static string GetName(Token t)

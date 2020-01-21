@@ -98,10 +98,19 @@ namespace SimpleCompiler
                 s.Parse(sTokens);
                 Body.Add(s);
             }
+
+            StatetmentBase lastStatetment = Body[Body.Count - 1];
+            Body.RemoveAt(Body.Count - 1);
+            if (!(lastStatetment is ReturnStatement))
+            {
+                throw new Exception("The last state of a function must be a return statement");
+            }
+            Return = (ReturnStatement)lastStatetment;
+
             //Need to check here that the last statement is a return statement
             //Finally, the function should end with }
             Token tEnd = sTokens.Pop();//}
-            if (!(t is Parentheses) || ((Parentheses)t).Name != '}')
+            if (!(tEnd is Parentheses) || ((Parentheses)tEnd).Name != '}')
             {
                 throw new SyntaxErrorException($"Expected a '}}' but saw '{t}'", t);
             }
@@ -109,16 +118,17 @@ namespace SimpleCompiler
 
         public override string ToString()
         {
-            string sFunction = "function " + ReturnType + " " + Name + "(";
+            string sFunction = "function " + ReturnType.ToString().ToLower() + " " + Name + "(";
             for (int i = 0; i < Args.Count - 1; i++)
-                sFunction += Args[i].Type + " " + Args[i].Name + ",";
+                sFunction += Args[i].Type.ToString().ToLower() + " " + Args[i].Name + ",";
             if(Args.Count > 0)
-                sFunction += Args[Args.Count - 1].Type + " " + Args[Args.Count - 1].Name;
+                sFunction += Args[Args.Count - 1].Type.ToString().ToLower() + " " + Args[Args.Count - 1].Name;
             sFunction += "){\n";
             foreach (VarDeclaration v in Locals)
                 sFunction += "\t\t" + v + "\n";
             foreach (StatetmentBase s in Body)
                 sFunction += "\t\t" + s + "\n";
+            sFunction += "\t\t" + Return + "\n";
             sFunction += "\t}";
             return sFunction;
         }

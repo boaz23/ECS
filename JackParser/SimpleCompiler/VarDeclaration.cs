@@ -68,7 +68,7 @@ namespace SimpleCompiler
 
         public override string ToString()
         {
-            return "var " + Type + " " + Name + ";";
+            return "var " + Type.ToString().ToLower() + " " + Name + ";";
         }
     }
 }

@@ -18,7 +18,7 @@ namespace SimpleCompiler
 
             while (sTokens.Count > 0 && !(sTokens.Peek() is Parentheses))
             {
-                token = sTokens.Pop();
+                token = sTokens.Peek();
                 StatetmentBase statetment = Create(token);
                 statetment.Parse(sTokens);
                 body.Add(statetment);

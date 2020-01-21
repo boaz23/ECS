@@ -21,8 +21,6 @@ namespace SimpleCompiler
                 global.Parse(sTokens);
                 Globals.Add(global);
             }
-            Main = new Function();
-            Main.Parse(sTokens);
             Functions = new List<Function>();
             while (sTokens.Count > 0)
             {
@@ -32,6 +30,17 @@ namespace SimpleCompiler
                 f.Parse(sTokens);
                 Functions.Add(f);
             }
+
+            if (Functions.Count > 0)
+            {
+                Function f = Functions[Functions.Count - 1];
+                Functions.RemoveAt(Functions.Count - 1);
+                Main = f;
+            }
+            else
+            {
+                throw new Exception("Missing main method");
+            }
         }
 
         public override string ToString()
@@ -39,9 +48,9 @@ namespace SimpleCompiler
             string sProgram = "";
             foreach (VarDeclaration v in Globals)
                 sProgram += "\t" + v + "\n";
-            sProgram += "\t" + Main + "\n";
             foreach (Function f in Functions)
                 sProgram += "\t" + f + "\n";
+            sProgram += "\t" + Main + "\n";
             return sProgram;
         }
     }

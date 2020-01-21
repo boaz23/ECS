@@ -37,6 +37,7 @@ namespace SimpleCompiler
                 throw new SyntaxErrorException($"Expected a ')' but saw '{token}'", token);
             }
 
+            Body = new List<StatetmentBase>();
             ParseStatements(sTokens, Body);
         }
 

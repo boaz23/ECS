@@ -26,7 +26,8 @@ namespace SimpleCompiler
                 throw new SyntaxErrorException($"Expected a '(' but saw '{token}'", token);
             }
 
-            while (sTokens.Count > 0 && !(sTokens.Peek() is Parentheses))
+            Args = new List<Expression>();
+            while (sTokens.Count > 0 && (!(sTokens.Peek() is Parentheses) || ((Parentheses)sTokens.Peek()).Name != ')'))
             {
                 Expression expression = Create(sTokens);
                 expression.Parse(sTokens);

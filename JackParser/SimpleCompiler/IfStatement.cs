@@ -38,6 +38,7 @@ namespace SimpleCompiler
                 throw new SyntaxErrorException($"Expected a ')' but saw '{token}'", token);
             }
 
+            DoIfTrue = new List<StatetmentBase>();
             ParseStatements(sTokens, DoIfTrue);
 
             token = sTokens.Peek(); // maybe "else"
