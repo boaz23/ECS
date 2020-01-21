@@ -1,24 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleCompiler
 {
     class Program
     {
-
-
-
-
         static void Main(string[] args)
         {
             TestParse();
         }
-
-
 
         public static string GetName(Token t)
         {
@@ -40,8 +30,6 @@ namespace SimpleCompiler
             }
             return "";
         }
-
-
 
         private static bool TestParse()
         {

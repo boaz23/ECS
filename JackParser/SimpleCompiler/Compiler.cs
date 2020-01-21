@@ -29,7 +29,6 @@ namespace SimpleCompiler
         {
             m_dSymbolTable = new Dictionary<string, int>();
             m_cLocals = 0;
-
         }
 
         public List<string> Compile(string sInputFile)
