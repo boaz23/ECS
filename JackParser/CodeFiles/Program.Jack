@@ -1,0 +1,40 @@
+var int x;
+var int y;
+
+
+
+//GCD using Euclid algorithm
+function int GCD( int a, int b){
+	var int r;
+	while( (b >  0 ) ){
+		let r = (a - (b *(a/b)));
+		let a = b;
+		let b = r;
+	}
+	return a;
+}
+
+//recursive Fibonacci
+function int Fibonacci(int n){
+	var int n1;
+	var int n2;
+	//Base case
+	if((n< 2)){
+		return n;
+	}
+	//Recursive calls
+	let n1 = Fibonacci((n - 1));
+	let n2 = Fibonacci((n - 2));
+	//Solution construction
+	return (n1 +n2);
+}
+
+function int main(array argv, int argc){
+	var int x;
+	var int y;
+	var int z;
+	let x = -Fibonnacci(10);
+	let y = GCD(10, Fibonacci(8));
+	let z = !((x *(y+ 3)) <(y + 1));
+	return z;
+}

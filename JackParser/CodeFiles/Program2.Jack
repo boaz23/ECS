@@ -1,0 +1,64 @@
+var int x;
+var int y;
+var char z;
+var array w;
+
+
+
+//Comment1
+function int f1( int a, int b){
+	var int r;
+	var int c;
+	while( ( b >0 ) ){
+		let r = (a -(b* (a/ b)));
+		let a = (b >1);
+		let b = f2(x);
+		let c = f3((a+ 1), (-b- (a +1)));
+	}
+	return a;
+}
+
+//Comment2
+function int f2(int n){
+	var int n1;
+	var int n2;
+	//Base case
+	if(( n< 2)){
+		return n;
+	}
+	//Recursive calls
+	let n1 = f1(( n- 10));
+	let n2 = f2(( n -(2+n1)));
+	//Solution construction
+	return (n1 *n2);
+}
+
+function int f3(int x, int y){
+	var char c1;
+	var char c2;
+	if(flag){
+		let x = (x +1);
+	}
+	else{
+		let x = (x- 1);
+	}
+	while((x> 0)){
+		while((y< 3)){
+			while((c1= 32)){
+				let x = (x +(x- y));
+				let y = ((-y +(x/ 2))* ((z+ 1) * f((-c1 - (c2+ 1)))));
+
+			}
+		}
+	}
+	return z;
+}
+
+function int main(array argv, int argc){
+	var int x;
+	var int y;
+	var int z;
+	let x = f1(10);
+	let y = f2(10, f3(8));
+	return (x + y );
+}
