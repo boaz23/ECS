@@ -13,6 +13,7 @@ namespace SimpleCompiler
             Position = position;
             Name = name;
         }
+
         public override bool Equals(object obj)
         {
             if (obj is Operator)
@@ -21,6 +22,5 @@ namespace SimpleCompiler
             }
             return false;
         }
-
     }
 }

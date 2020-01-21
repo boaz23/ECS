@@ -8,16 +8,11 @@ namespace SimpleCompiler
 {
     public class VarDeclaration : JackProgramElement
     {
-
         public enum VarTypeEnum { Int, Array, Char, Boolean, Invalid };
         public VarTypeEnum Type { get; private set; }
         public string Name { get; private set; }
 
-
-        public VarDeclaration()
-        {
-
-        }
+        public VarDeclaration() { }
 
         public VarDeclaration(Token tType, Token tName)
         {
@@ -63,10 +58,12 @@ namespace SimpleCompiler
             if (!(tVar is Statement) || (((Statement)tVar).Name != "var"))
                 throw new SyntaxErrorException("Expected var, received " + tVar, tVar);
             SetTypeAndName(sTokens.Pop(), sTokens.Pop());
-            Token tEnd = sTokens.Pop();
-            if(!(tEnd is Separator))
-                throw new SyntaxErrorException("Expected ; received " + tEnd, tEnd);
 
+            Token tEnd = sTokens.Pop(); // ';'
+            if (!(tEnd is Separator) || ((Separator)tEnd).Name != ';')
+            {
+                throw new SyntaxErrorException($"Expected a ';' but saw '{tEnd}'", tEnd);
+            }
         }
 
         public override string ToString()

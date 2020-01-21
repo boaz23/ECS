@@ -12,8 +12,15 @@ namespace SimpleCompiler
 
         public override void Parse(TokensStack sTokens)
         {
-            Identifier t = (Identifier)sTokens.Pop();
-            Name = t.Name;
+            Token token;
+
+            token = sTokens.Pop();
+            if (!(token is Identifier))
+            {
+                throw new SyntaxErrorException($"Expected an identifier but got {token}", token);
+            }
+
+            Name = ((Identifier)token).Name;
         }
 
         public override string ToString()

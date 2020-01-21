@@ -29,7 +29,6 @@ namespace SimpleCompiler
             if (tFirst is Number)
                 return new NumericExpression();
             throw new SyntaxErrorException("Expected expression", tFirst);
-            return null;
         }
     }
 }

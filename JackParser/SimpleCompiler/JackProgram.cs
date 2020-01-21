@@ -12,7 +12,6 @@ namespace SimpleCompiler
         public List<Function> Functions { get; private set; }
         public Function Main { get; private set; }
 
-
         public override void Parse(TokensStack sTokens)
         {
             Globals = new List<VarDeclaration>();

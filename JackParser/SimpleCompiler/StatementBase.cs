@@ -19,6 +19,7 @@ namespace SimpleCompiler
                 return new WhileStatement();
             return null;
         }
+
         public static StatetmentBase Create(Token t)
         {
             if (t is Statement)

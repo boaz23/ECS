@@ -8,6 +8,7 @@ namespace SimpleCompiler
     class Symbol : Token
     {
         public char Name { get; set; }
+
         public override bool Equals(object obj)
         {
             if (obj is Symbol)
@@ -18,10 +19,10 @@ namespace SimpleCompiler
             }
             return false;
         }
+
         public override string ToString()
         {
             return Name + "";
         }
-
     }
 }

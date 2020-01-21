@@ -8,6 +8,7 @@ namespace SimpleCompiler
     public class Keyword : Token
     {
         public string Name { get; set; }
+
         public override bool Equals(object obj)
         {
             if (obj is Keyword)
@@ -18,10 +19,10 @@ namespace SimpleCompiler
             }
             return false;
         }
+
         public override string ToString()
         {
             return Name;
         }
-
     }
 }

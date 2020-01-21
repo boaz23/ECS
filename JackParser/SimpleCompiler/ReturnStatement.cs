@@ -15,13 +15,23 @@ namespace SimpleCompiler
         public override void Parse(TokensStack sTokens)
         {
             //First, we remove the "return" token
-            Token tRet = sTokens.Pop();//return
+            Token tRet = sTokens.Pop();// "return"
+            if (!(tRet is Statement) && ((Statement)tRet).Name != "return")
+            {
+                throw new SyntaxErrorException($"Expected 'return' but got {tRet}", tRet);
+            }
+
             //Now, we create the correct Expression type based on the top token in the stack
             Expression = Expression.Create(sTokens);
             //We transfer responsibility of the parsing to the created expression
             Expression.Parse(sTokens);
+
             //After the expression was parsed, we expect to see ;
-            Token tEnd = sTokens.Pop();//;
+            Token tEnd = sTokens.Pop(); // ';'
+            if (!(tEnd is Separator) || ((Separator)tEnd).Name != ';')
+            {
+                throw new SyntaxErrorException($"Expected a ';' but saw '{tEnd}'", tEnd);
+            }
         }
 
         public override string ToString()

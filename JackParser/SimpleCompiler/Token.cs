@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using static System.Linq.Enumerable;
 
 namespace SimpleCompiler
 {
@@ -8,10 +9,18 @@ namespace SimpleCompiler
         public static string[] Statements = { "function", "var", "let", "while", "if", "else", "return" };
         public static string[] VarTypes = { "int", "char", "boolean", "array" };
         public static string[] Constants = { "true", "false", "null" };
+        public static char[] BinaryOperators = new char[] { '*', '+', '-', '/', '<', '>', '&', '=', '|' };
+        public static char[] UnaryOperators = new char[] { '-', '!' };
         public static char[] Operators = new char[] { '*', '+', '-', '/', '<', '>', '&', '=', '|', '!' };
         public static char[] Parentheses = new char[] { '(', ')', '[', ']', '{', '}' };
         public static char[] Separators = new char[] { ',', ';' };
 
+        static Token()
+        {
+            Operators = BinaryOperators
+                .Union(UnaryOperators)
+                .ToArray();
+        }
 
         public int Line { get; set; }
         public int Position { get; set; }

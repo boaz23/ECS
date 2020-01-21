@@ -8,6 +8,7 @@ namespace SimpleCompiler
     public class Identifier : Token
     {
         public string Name { get; set; }
+
         public Identifier(string name, int line, int position)
         {
             Line = line;
@@ -16,6 +17,7 @@ namespace SimpleCompiler
 
             //you can add code here to identify invalid identifiers and throw an exception
         }
+
         public override bool Equals(object obj)
         {
             if (obj is Identifier)
@@ -26,10 +28,10 @@ namespace SimpleCompiler
             }
             return false;
         }
+
         public override string ToString()
         {
             return Name;
         }
-
     }
 }

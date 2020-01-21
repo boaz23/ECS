@@ -18,8 +18,36 @@ namespace SimpleCompiler
 
         public override void Parse(TokensStack sTokens)
         {
-            throw new NotImplementedException();
-        }
+            Token token;
 
+            token = sTokens.Pop(); // 'let'
+            if (!(token is Statement) && ((Statement)token).Name != "let")
+            {
+                throw new SyntaxErrorException($"Expected 'let' but got {token}", token);
+            }
+
+            token = sTokens.Pop();
+            if (!(token is Identifier))
+            {
+                throw new SyntaxErrorException($"Expected an identifier but got {token}", token);
+            }
+            Variable = ((Identifier)token).Name;
+
+            token = sTokens.Pop(); // '='
+            if (!(token is Operator) || ((Operator)token).Name != '=')
+            {
+                throw new SyntaxErrorException($"Expected a '=' but saw '{token}'", token);
+            }
+
+            Expression value = Expression.Create(sTokens);
+            value.Parse(sTokens);
+            Value = value;
+
+            token = sTokens.Pop(); // ';'
+            if (!(token is Separator) || ((Separator)token).Name != ';')
+            {
+                throw new SyntaxErrorException($"Expected a ';' but saw '{token}'", token);
+            }
+        }
     }
 }

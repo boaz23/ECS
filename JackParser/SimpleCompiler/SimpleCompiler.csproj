@@ -52,7 +52,7 @@
     <Compile Include="Expression.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="IfStatement.cs" />
-    <Compile Include="InvalidSyntaxException.cs" />
+    <Compile Include="SyntaxErrorException.cs" />
     <Compile Include="JackProgram.cs" />
     <Compile Include="JackProgramElement.cs" />
     <Compile Include="Number.cs" />
@@ -65,6 +65,7 @@
     <Compile Include="Separator.cs" />
     <Compile Include="Statement.cs" />
     <Compile Include="StatementBase.cs" />
+    <Compile Include="StatementWithBody.cs" />
     <Compile Include="Symbol.cs" />
     <Compile Include="Token.cs" />
     <Compile Include="TokensStack.cs" />

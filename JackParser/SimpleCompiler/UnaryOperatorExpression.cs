@@ -18,8 +18,18 @@ namespace SimpleCompiler
 
         public override void Parse(TokensStack sTokens)
         {
-            throw new NotImplementedException();
+            Token token;
 
+            token = sTokens.Pop(); // unary operator
+            if (!(token is Operator) || !Token.UnaryOperators.Contains(((Operator)token).Name))
+            {
+                throw new SyntaxErrorException($"Expected a unary operator but saw '{token}'", token);
+            }
+            Operator = ((Operator)token).Name.ToString();
+
+            Expression op = Create(sTokens);
+            op.Parse(sTokens);
+            Operand = op;
         }
     }
 }
