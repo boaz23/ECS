@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 
 namespace SimpleCompiler
 {
+    [DebuggerDisplay("{Line}, {Position}, '{ToString()}', {GetType().Name}")]
     public class Token
     {
         public static string[] Statements = { "function", "var", "let", "while", "if", "else", "return" };
@@ -12,7 +10,7 @@ namespace SimpleCompiler
         public static string[] Constants = { "true", "false", "null" };
         public static char[] Operators = new char[] { '*', '+', '-', '/', '<', '>', '&', '=', '|', '!' };
         public static char[] Parentheses = new char[] { '(', ')', '[', ']', '{', '}' };
-        public static char[] Separators = new char[] {  ',', ';'};
+        public static char[] Separators = new char[] { ',', ';' };
 
 
         public int Line { get; set; }
