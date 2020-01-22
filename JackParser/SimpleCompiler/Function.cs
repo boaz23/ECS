@@ -99,17 +99,29 @@ namespace SimpleCompiler
                 Body.Add(s);
             }
 
-            StatetmentBase lastStatetment = Body[Body.Count - 1];
-            Body.RemoveAt(Body.Count - 1);
-            if (!(lastStatetment is ReturnStatement))
+            bool hasReturn = false;
+            if (Body.Count > 0)
             {
-                throw new Exception("The last state of a function must be a return statement");
+                StatetmentBase lastStatetment = Body[Body.Count - 1];
+                Body.RemoveAt(Body.Count - 1);
+                if (lastStatetment is ReturnStatement)
+                {
+                    Return = (ReturnStatement)lastStatetment;
+                    hasReturn = true;
+                }
+                else
+                {
+                    hasReturn = false;
+                }
             }
-            Return = (ReturnStatement)lastStatetment;
 
             //Need to check here that the last statement is a return statement
             //Finally, the function should end with }
             Token tEnd = sTokens.Pop();//}
+            if (!hasReturn)
+            {
+                throw new SyntaxErrorException("Missing a return statement.", tEnd);
+            }
             if (!(tEnd is Parentheses) || ((Parentheses)tEnd).Name != '}')
             {
                 throw new SyntaxErrorException($"Expected a '}}' but saw '{t}'", t);
