@@ -36,6 +36,7 @@ namespace SimpleCompiler
             Registers["RESULT"] = 4;
             Registers["OPERAND1"] = 5;
             Registers["OPERAND2"] = 6;
+            Registers["ADDRESS"] = 7;
             Registers["RETURN"] = 15;
             for (int i = 0; i < 16; i++)
                 Registers["R" + i] = i;

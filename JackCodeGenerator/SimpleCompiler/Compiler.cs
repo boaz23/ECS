@@ -16,7 +16,6 @@ namespace SimpleCompiler
 
         private static readonly Regex IdentifierRegex = new Regex(@"^(_|[a-z]|[A-Z])\w*$");
 
-        private Dictionary<string, int> m_dSymbolTable;
         private int m_cLocals;
 
         static Compiler()
@@ -29,8 +28,7 @@ namespace SimpleCompiler
 
         public Compiler()
         {
-            m_dSymbolTable = new Dictionary<string, int>();
-            m_cLocals = 0;
+            m_cLocals = 1;
         }
 
         public List<VarDeclaration> ParseVarDeclarations(List<string> lVarLines)
@@ -71,9 +69,109 @@ namespace SimpleCompiler
         {
             List<string> lAssembly = new List<string>();
             //add here code for computing a single let statement containing only a simple expression
+
+            if (!dSymbolTable.ContainsKey(aSimple.Variable))
+            {
+                throw new Exception($"Use of undeclared variable '{aSimple.Variable}'");
+            }
+
+            Expression expression = aSimple.Value;
+            BinaryOperationExpression binaryOperationExpression;
+            if (CopyToVirtualRegister(lAssembly, dSymbolTable, expression, "RESULT"))
+            {
+            }
+            else if ((binaryOperationExpression = expression as BinaryOperationExpression) != null)
+            {
+                // Put expression value to RESULT
+                CopyToVirtualRegister_ThrowOnNoSupport(lAssembly, dSymbolTable, binaryOperationExpression.Operand1, "OPERAND1");
+                CopyToVirtualRegister_ThrowOnNoSupport(lAssembly, dSymbolTable, binaryOperationExpression.Operand2, "OPERAND2");
+                lAssembly.Add("@OPERAND1");
+                lAssembly.Add("D=M");
+                lAssembly.Add("@OPERAND2");
+                if (binaryOperationExpression.Operator == "+")
+                {
+                    lAssembly.Add("D=D+M");
+                }
+                else if (binaryOperationExpression.Operator == "-")
+                {
+                    lAssembly.Add("D=D-M");
+                }
+                else
+                {
+                    throw new NotSupportedException();
+                }
+                lAssembly.Add("@RESULT");
+                lAssembly.Add("M=D");
+            }
+            else
+            {
+                throw new NotSupportedException("Expression is not supported");
+            }
+
+            lAssembly.Add("@LCL");
+            lAssembly.Add("D=M");
+            lAssembly.Add($"@{dSymbolTable[aSimple.Variable]}");
+            lAssembly.Add("D=D+A");
+            lAssembly.Add("@ADDRESS");
+            lAssembly.Add("M=D");
+            lAssembly.Add("@RESULT");
+            lAssembly.Add("D=M");
+            lAssembly.Add("@ADDRESS");
+            lAssembly.Add("A=M");
+            lAssembly.Add("M=D");
+
             return lAssembly;
         }
 
+        private static void CopyToVirtualRegister_ThrowOnNoSupport(
+            List<string> lAssembly,
+            Dictionary<string, int> dSymbolTable,
+            Expression expression,
+            string register
+        )
+        {
+            if (!CopyToVirtualRegister(lAssembly, dSymbolTable, expression, register))
+            {
+                throw new NotSupportedException("Expression is not supported");
+            }
+        }
+        private static bool CopyToVirtualRegister(
+            List<string> lAssembly,
+            Dictionary<string, int> dSymbolTable,
+            Expression expression,
+            string register
+        )
+        {
+            bool supported = true;
+            NumericExpression numExp;
+            VariableExpression varExp;
+            if ((numExp = expression as NumericExpression) != null)
+            {
+                lAssembly.Add($"@{numExp.Value}");
+                lAssembly.Add("D=A");
+                lAssembly.Add($"@{register}");
+                lAssembly.Add("M=D");
+            }
+            else if ((varExp = expression as VariableExpression) != null)
+            {
+                if (!dSymbolTable.ContainsKey(varExp.Name))
+                {
+                    throw new Exception($"Use of undeclared variable '{varExp.Name}'");
+                }
+                lAssembly.Add("@LCL");
+                lAssembly.Add("A=M");
+                lAssembly.Add($"@{dSymbolTable[varExp.Name]}");
+                lAssembly.Add("D=D+A");
+                lAssembly.Add($"@{register}");
+                lAssembly.Add("M=D");
+            }
+            else
+            {
+                supported = false;
+            }
+
+            return supported;
+        }
 
         public Dictionary<string, int> ComputeSymbolTable(List<VarDeclaration> lDeclerations)
         {
@@ -120,8 +218,77 @@ namespace SimpleCompiler
         {
             //add here code to simply expressins in a statement. 
             //add var declarations for artificial variables.
-            return null;
+            var newLetStatements = new List<LetStatement>();
+            s.Value = SimplifyExpressions(s.Value, newLetStatements, lVars, true);
+            newLetStatements.Add(s);
+            return newLetStatements;
         }
+
+        private Expression SimplifyExpressions(
+            Expression expression,
+            List<LetStatement> newLetStatements,
+            List<VarDeclaration> lVars,
+            bool isFirst
+        )
+        {
+            Expression simplifiedExpression;
+            var binaryOperationExpression = expression as BinaryOperationExpression;
+            if (binaryOperationExpression == null)
+            {
+                simplifiedExpression = expression;
+            }
+            else
+            {
+                var tempExpression = new BinaryOperationExpression
+                {
+                    Operator = binaryOperationExpression.Operator,
+
+                    Operand1 = SimplifyExpressions(
+                        binaryOperationExpression.Operand1,
+                        newLetStatements,
+                        lVars,
+                        false
+                    ),
+                    Operand2 = SimplifyExpressions(
+                        binaryOperationExpression.Operand2,
+                        newLetStatements,
+                        lVars,
+                        false
+                    )
+                };
+
+                if (tempExpression.Operand1 == binaryOperationExpression.Operand1 &&
+                    tempExpression.Operand2 == binaryOperationExpression.Operand2)
+                {
+                    if (isFirst)
+                    {
+                        simplifiedExpression = binaryOperationExpression;
+                    }
+                    else
+                    {
+                        string artificialVarName = $"_{m_cLocals}";
+                        m_cLocals++;
+                        lVars.Add(new VarDeclaration("int", artificialVarName));
+                        newLetStatements.Add(new LetStatement
+                        {
+                            Variable = artificialVarName,
+                            Value = binaryOperationExpression
+                        });
+                        simplifiedExpression = new VariableExpression
+                        {
+                            Name = artificialVarName
+                        };
+                    }
+                }
+                else
+                {
+                    simplifiedExpression = tempExpression;
+                }
+            }
+
+            return simplifiedExpression;
+        }
+
         public List<LetStatement> SimplifyExpressions(List<LetStatement> ls, List<VarDeclaration> lVars)
         {
             List<LetStatement> lSimplified = new List<LetStatement>();
@@ -129,7 +296,6 @@ namespace SimpleCompiler
                 lSimplified.AddRange(SimplifyExpressions(s, lVars));
             return lSimplified;
         }
-
  
         public LetStatement ParseStatement(List<Token> lTokens)
         {
@@ -140,7 +306,6 @@ namespace SimpleCompiler
             s.Parse(sTokens);
             return s;
         }
-
  
         public List<Token> Tokenize(string sLine, int iLine)
         {

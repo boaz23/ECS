@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -148,15 +149,17 @@ namespace SimpleCompiler
 
         }
 
-
-
-
         static void Main(string[] args)
         {
-            Test3();
+            Test1();
+#if DEBUG
+            if (Debugger.IsAttached)
+            {
+                Console.WriteLine("Press any key to continue . . . ");
+                Console.ReadKey(true);
+            }
+#endif
             //TestParseAndErrors();
         }
-
- 
      }
 }
