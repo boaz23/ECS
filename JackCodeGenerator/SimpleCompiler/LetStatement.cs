@@ -11,6 +11,8 @@ namespace SimpleCompiler
         public string Variable { get; set; }
         public Expression Value { get; set; }
 
+        public Identifier VariableToken { get; private set; }
+
         public override string ToString()
         {
             return "let " + Variable + " = " + Value + ";";
@@ -31,7 +33,9 @@ namespace SimpleCompiler
             {
                 throw new SyntaxErrorException($"Expected an identifier but got {token}", token);
             }
-            Variable = ((Identifier)token).Name;
+            VariableToken = (Identifier)token;
+            Variable = VariableToken.Name;
+
 
             token = sTokens.Pop(); // '='
             if (!(token is Operator) || ((Operator)token).Name != '=')

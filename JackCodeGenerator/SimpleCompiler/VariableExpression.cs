@@ -10,6 +10,8 @@ namespace SimpleCompiler
     {
         public string Name;
 
+        public Identifier VariableToken { get; private set; }
+
         public override void Parse(TokensStack sTokens)
         {
             Token token;
@@ -20,7 +22,8 @@ namespace SimpleCompiler
                 throw new SyntaxErrorException($"Expected an identifier but got {token}", token);
             }
 
-            Name = ((Identifier)token).Name;
+            VariableToken = (Identifier)token;
+            Name = VariableToken.Name;
         }
 
         public override string ToString()

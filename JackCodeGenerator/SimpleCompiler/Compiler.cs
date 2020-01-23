@@ -71,7 +71,7 @@ namespace SimpleCompiler
             //add here code for computing a single let statement containing only a simple expression
 
             CopyToVirtualRegister(lAssembly, dSymbolTable, aSimple.Value, "RESULT");
-            PutLocalVarAddressToRegister(lAssembly, dSymbolTable, aSimple.Variable, "D");
+            PutLocalVarAddressToRegister(lAssembly, dSymbolTable, aSimple.Variable, "D", aSimple.VariableToken);
             lAssembly.Add("@ADDRESS");
             lAssembly.Add("M=D");
             lAssembly.Add("@RESULT");
@@ -87,12 +87,13 @@ namespace SimpleCompiler
             List<string> lAssembly,
             Dictionary<string, int> dSymbolTable,
             string varName,
-            string register
+            string register,
+            Identifier identifierToken
         )
         {
             if (!dSymbolTable.ContainsKey(varName))
             {
-                throw new Exception($"Use of undeclared variable '{varName}'");
+                throw new SyntaxErrorException($"Use of undeclared variable '{varName}'", identifierToken);
             }
 
             lAssembly.Add("@LCL");
@@ -120,7 +121,7 @@ namespace SimpleCompiler
             }
             else if ((varExp = expression as VariableExpression) != null)
             {
-                PutLocalVarAddressToRegister(lAssembly, dSymbolTable, varExp.Name, "A");
+                PutLocalVarAddressToRegister(lAssembly, dSymbolTable, varExp.Name, "A", varExp.VariableToken);
                 lAssembly.Add("D=M");
                 lAssembly.Add($"@{register}");
                 lAssembly.Add("M=D");
