@@ -200,7 +200,8 @@ namespace SimpleCompiler
             //add here code to simply expressins in a statement. 
             //add var declarations for artificial variables.
             var newLetStatements = new List<LetStatement>();
-            s.Value = SimplifyExpressions(s.Value, newLetStatements, lVars, true);
+            Expression expression = s.Value;
+            s.Value = SimplifyExpressions(expression, newLetStatements, lVars, true);
             newLetStatements.Add(s);
             return newLetStatements;
         }
@@ -220,7 +221,7 @@ namespace SimpleCompiler
             }
             else
             {
-                var tempExpression = new BinaryOperationExpression
+                var tempSimplifiedExpression = new BinaryOperationExpression
                 {
                     Operator = binaryOperationExpression.Operator,
 
@@ -238,32 +239,30 @@ namespace SimpleCompiler
                     )
                 };
 
-                if (tempExpression.Operand1 == binaryOperationExpression.Operand1 &&
-                    tempExpression.Operand2 == binaryOperationExpression.Operand2)
+                if (tempSimplifiedExpression.Operand1 == binaryOperationExpression.Operand1 &&
+                    tempSimplifiedExpression.Operand2 == binaryOperationExpression.Operand2)
                 {
-                    if (isFirst)
-                    {
-                        simplifiedExpression = binaryOperationExpression;
-                    }
-                    else
-                    {
-                        string artificialVarName = $"_{m_cLocals}";
-                        m_cLocals++;
-                        lVars.Add(new VarDeclaration("int", artificialVarName));
-                        newLetStatements.Add(new LetStatement
-                        {
-                            Variable = artificialVarName,
-                            Value = binaryOperationExpression
-                        });
-                        simplifiedExpression = new VariableExpression
-                        {
-                            Name = artificialVarName
-                        };
-                    }
+                    simplifiedExpression = binaryOperationExpression;
                 }
                 else
                 {
-                    simplifiedExpression = tempExpression;
+                    simplifiedExpression = tempSimplifiedExpression;
+                }
+
+                if (!isFirst)
+                {
+                    string artificialVarName = $"_{m_cLocals}";
+                    m_cLocals++;
+                    lVars.Add(new VarDeclaration("int", artificialVarName));
+                    newLetStatements.Add(new LetStatement
+                    {
+                        Variable = artificialVarName,
+                        Value = simplifiedExpression
+                    });
+                    simplifiedExpression = new VariableExpression
+                    {
+                        Name = artificialVarName
+                    };
                 }
             }
 

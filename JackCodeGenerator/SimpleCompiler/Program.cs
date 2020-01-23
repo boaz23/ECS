@@ -109,8 +109,8 @@ namespace SimpleCompiler
             List<string> lAssignments = new List<string>();
             lAssignments.Add("let x1 = 1;");
             lAssignments.Add("let x2 = 3;");
-            lAssignments.Add("let x3 = (((x1 + 1) - 4) + ((x2 + x1) - 2));");
-            lAssignments.Add("let x4 = ((x2 + x3) - (x2 -7));");
+            lAssignments.Add("let x3 = (((x1 + 1) - 4) + ((x2 + x1) - 2));"); // 0
+            lAssignments.Add("let x4 = ((x2 + x3) - (x2 -7));"); // 7
             lAssignments.Add("let x5 = (1000 - ((x1 + (((((x2 + x3) - x4) + x1) - x2) + x3)) - ((x1 - x2) + x4)));");
 
             List<LetStatement> ls = c.ParseAssignments(lAssignments);
@@ -151,7 +151,7 @@ namespace SimpleCompiler
 
         static void Main(string[] args)
         {
-            Test1();
+            Test4();
 #if DEBUG
             if (Debugger.IsAttached)
             {
