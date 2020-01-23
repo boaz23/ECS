@@ -70,21 +70,66 @@ namespace SimpleCompiler
             List<string> lAssembly = new List<string>();
             //add here code for computing a single let statement containing only a simple expression
 
-            if (!dSymbolTable.ContainsKey(aSimple.Variable))
+            CopyToVirtualRegister(lAssembly, dSymbolTable, aSimple.Value, "RESULT");
+            PutLocalVarAddressToRegister(lAssembly, dSymbolTable, aSimple.Variable, "D");
+            lAssembly.Add("@ADDRESS");
+            lAssembly.Add("M=D");
+            lAssembly.Add("@RESULT");
+            lAssembly.Add("D=M");
+            lAssembly.Add("@ADDRESS");
+            lAssembly.Add("A=M");
+            lAssembly.Add("M=D");
+
+            return lAssembly;
+        }
+
+        private static void PutLocalVarAddressToRegister(
+            List<string> lAssembly,
+            Dictionary<string, int> dSymbolTable,
+            string varName,
+            string register
+        )
+        {
+            if (!dSymbolTable.ContainsKey(varName))
             {
-                throw new Exception($"Use of undeclared variable '{aSimple.Variable}'");
+                throw new Exception($"Use of undeclared variable '{varName}'");
             }
 
-            Expression expression = aSimple.Value;
+            lAssembly.Add("@LCL");
+            lAssembly.Add("D=M");
+            lAssembly.Add($"@{dSymbolTable[varName]}");
+            lAssembly.Add($"{register}=D+A");
+        }
+
+        private static void CopyToVirtualRegister(
+            List<string> lAssembly,
+            Dictionary<string, int> dSymbolTable,
+            Expression expression,
+            string register
+        )
+        {
+            NumericExpression numExp;
+            VariableExpression varExp;
             BinaryOperationExpression binaryOperationExpression;
-            if (CopyToVirtualRegister(lAssembly, dSymbolTable, expression, "RESULT"))
+            if ((numExp = expression as NumericExpression) != null)
             {
+                lAssembly.Add($"@{numExp.Value}");
+                lAssembly.Add("D=A");
+                lAssembly.Add($"@{register}");
+                lAssembly.Add("M=D");
+            }
+            else if ((varExp = expression as VariableExpression) != null)
+            {
+                PutLocalVarAddressToRegister(lAssembly, dSymbolTable, varExp.Name, "A");
+                lAssembly.Add("D=M");
+                lAssembly.Add($"@{register}");
+                lAssembly.Add("M=D");
             }
             else if ((binaryOperationExpression = expression as BinaryOperationExpression) != null)
             {
                 // Put expression value to RESULT
-                CopyToVirtualRegister_ThrowOnNoSupport(lAssembly, dSymbolTable, binaryOperationExpression.Operand1, "OPERAND1");
-                CopyToVirtualRegister_ThrowOnNoSupport(lAssembly, dSymbolTable, binaryOperationExpression.Operand2, "OPERAND2");
+                CopyToVirtualRegister(lAssembly, dSymbolTable, binaryOperationExpression.Operand1, "OPERAND1");
+                CopyToVirtualRegister(lAssembly, dSymbolTable, binaryOperationExpression.Operand2, "OPERAND2");
                 lAssembly.Add("@OPERAND1");
                 lAssembly.Add("D=M");
                 lAssembly.Add("@OPERAND2");
@@ -98,7 +143,7 @@ namespace SimpleCompiler
                 }
                 else
                 {
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"Operator '{binaryOperationExpression.Operator}' is not supported.");
                 }
                 lAssembly.Add("@RESULT");
                 lAssembly.Add("M=D");
@@ -107,70 +152,6 @@ namespace SimpleCompiler
             {
                 throw new NotSupportedException("Expression is not supported");
             }
-
-            lAssembly.Add("@LCL");
-            lAssembly.Add("D=M");
-            lAssembly.Add($"@{dSymbolTable[aSimple.Variable]}");
-            lAssembly.Add("D=D+A");
-            lAssembly.Add("@ADDRESS");
-            lAssembly.Add("M=D");
-            lAssembly.Add("@RESULT");
-            lAssembly.Add("D=M");
-            lAssembly.Add("@ADDRESS");
-            lAssembly.Add("A=M");
-            lAssembly.Add("M=D");
-
-            return lAssembly;
-        }
-
-        private static void CopyToVirtualRegister_ThrowOnNoSupport(
-            List<string> lAssembly,
-            Dictionary<string, int> dSymbolTable,
-            Expression expression,
-            string register
-        )
-        {
-            if (!CopyToVirtualRegister(lAssembly, dSymbolTable, expression, register))
-            {
-                throw new NotSupportedException("Expression is not supported");
-            }
-        }
-        private static bool CopyToVirtualRegister(
-            List<string> lAssembly,
-            Dictionary<string, int> dSymbolTable,
-            Expression expression,
-            string register
-        )
-        {
-            bool supported = true;
-            NumericExpression numExp;
-            VariableExpression varExp;
-            if ((numExp = expression as NumericExpression) != null)
-            {
-                lAssembly.Add($"@{numExp.Value}");
-                lAssembly.Add("D=A");
-                lAssembly.Add($"@{register}");
-                lAssembly.Add("M=D");
-            }
-            else if ((varExp = expression as VariableExpression) != null)
-            {
-                if (!dSymbolTable.ContainsKey(varExp.Name))
-                {
-                    throw new Exception($"Use of undeclared variable '{varExp.Name}'");
-                }
-                lAssembly.Add("@LCL");
-                lAssembly.Add("A=M");
-                lAssembly.Add($"@{dSymbolTable[varExp.Name]}");
-                lAssembly.Add("D=D+A");
-                lAssembly.Add($"@{register}");
-                lAssembly.Add("M=D");
-            }
-            else
-            {
-                supported = false;
-            }
-
-            return supported;
         }
 
         public Dictionary<string, int> ComputeSymbolTable(List<VarDeclaration> lDeclerations)
